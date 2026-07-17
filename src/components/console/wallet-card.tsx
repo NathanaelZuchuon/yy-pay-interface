@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bffGet, bffPost } from "@/lib/bff-client";
+import { RECHARGE_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
 import type { components } from "@/types/schemas-auth";
 import type { components as PaymentComponents } from "@/types/schemas-payment";
 import { Loader2, Plus, Wallet } from "lucide-react";
@@ -29,6 +30,8 @@ import { toast } from "sonner";
 
 type UserAccountResponse = components["schemas"]["UserAccountResponse"];
 type WalletResponse = PaymentComponents["schemas"]["WalletResponse"];
+type WalletRechargeOrderResponse =
+  PaymentComponents["schemas"]["WalletRechargeOrderResponse"];
 type SessionContext = {
   organizationId: string | null;
   actorId: string | null;
@@ -38,6 +41,10 @@ type SessionContext = {
 type WalletCardProps = {
   onWalletChange?: (wallet: WalletResponse | null) => void;
 };
+
+function createRechargeIdempotencyKey(walletId: string) {
+  return `wallet-${walletId}-recharge-${crypto.randomUUID()}`;
+}
 
 export function WalletCard({ onWalletChange }: WalletCardProps) {
   const [user, setUser] = useState<UserAccountResponse | null>(null);
@@ -120,14 +127,29 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
     }
     setRecharging(true);
     try {
-      await bffPost(`/api/payments/wallets/${wallet.id}/recharge`, {
-        amount,
-        reference: `recharge-${Date.now()}`,
-      });
-      toast.success("Recharge effectuée");
-      setDialogOpen(false);
-      setRechargeAmount("");
-      await loadWallet();
+      const recharge = await bffPost<WalletRechargeOrderResponse>(
+        `/api/payments/wallets/${wallet.id}/recharge`,
+        {
+          amount,
+          currency: "XAF",
+          provider: "MYCOOLPAY",
+          method: "MOBILE_MONEY",
+          idempotencyKey: createRechargeIdempotencyKey(wallet.id),
+        },
+      );
+
+      if (recharge.orderId) {
+        sessionStorage.setItem(RECHARGE_ORDER_STORAGE_KEY, recharge.orderId);
+      }
+
+      if (recharge.redirectUrl) {
+        setDialogOpen(false);
+        setRechargeAmount("");
+        globalThis.location.assign(recharge.redirectUrl);
+        return;
+      }
+
+      toast.error("URL de redirection MYCOOLPAY indisponible");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Recharge impossible",
@@ -162,11 +184,12 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
               <DialogHeader>
                 <DialogTitle>Recharger le wallet</DialogTitle>
                 <DialogDescription>
-                  Ajoutez des fonds à votre wallet.
+                  Paiement sécurisé via MYCOOLPAY. Le solde sera crédité après
+                  confirmation du fournisseur.
                 </DialogDescription>
               </DialogHeader>
               <div className="yypay:space-y-2">
-                <Label htmlFor="amount">Montant</Label>
+                <Label htmlFor="amount">Montant (XAF)</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -181,7 +204,7 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
                   {recharging && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Recharger
+                  Recharger via MYCOOLPAY
                 </Button>
               </DialogFooter>
             </DialogContent>

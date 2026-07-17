@@ -12,13 +12,30 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { bffGet, bffPost } from "@/lib/bff-client";
+import { COMMERCIAL_PLAN_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
+import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
 import type { components } from "@/types/schemas-payment";
 import { CreditCard, Loader2, Trash2, Wallet } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
-type PaymentOrderResponse = components["schemas"]["PaymentOrderResponse"];
+type CommercialPlanCheckoutResponse =
+  components["schemas"]["CommercialPlanCheckoutResponse"];
+type CommercialPlanQuoteResponse =
+  components["schemas"]["CommercialPlanQuoteResponse"];
+type CommercialPlanQuoteLine =
+  components["schemas"]["CommercialPlanQuoteLine"];
+type BillingPeriod = NonNullable<
+  components["schemas"]["CommercialPlanCheckoutRequest"]["billingPeriod"]
+>;
+
+type AggregatedQuote = {
+  billingPeriod: BillingPeriod;
+  lines: CommercialPlanQuoteLine[];
+  total: number;
+  currency: string;
+};
 
 type SessionContext = {
   organizationId: string | null;
@@ -26,8 +43,8 @@ type SessionContext = {
   walletId: string | null;
 };
 
-function createCartIdempotencyKey() {
-  return `cart-${crypto.randomUUID()}`;
+function createCartIdempotencyKey(planCode: string) {
+  return `cart-${planCode}-${crypto.randomUUID()}`;
 }
 
 function redirectToPayment(url: string) {
@@ -53,6 +70,9 @@ function useIsMobile() {
 
 export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
   const [open, setOpen] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("MONTHLY");
+  const [quote, setQuote] = useState<AggregatedQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
   const [checkingOut, setCheckingOut] = useState<"wallet" | "mycoolpay" | null>(
     null,
   );
@@ -60,8 +80,80 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
   const items = useCartStore((state) => state.items);
   const removePlan = useCartStore((state) => state.removePlan);
   const clearCart = useCartStore((state) => state.clearCart);
-  const getTotalAmount = useCartStore((state) => state.totalAmount);
-  const cartTotal = getTotalAmount();
+
+  const planCodes = useMemo(
+    () =>
+      [...new Set(items.map((plan) => plan.code).filter(Boolean) as string[])],
+    [items],
+  );
+  const quoteTotal = quote?.total ?? 0;
+  const quoteCurrency = quote?.currency ?? items[0]?.currency ?? "XAF";
+
+  useEffect(() => {
+    if (!open || planCodes.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    const timer = globalThis.setTimeout(() => {
+      setQuoteLoading(true);
+      void Promise.all(
+        planCodes.map((planCode) =>
+          bffPost<CommercialPlanQuoteResponse>(
+            `/api/commercial-plans/${planCode}/quote`,
+            { billingPeriod, addOnCodes: [] },
+          ),
+        ),
+      )
+        .then((quotes) => {
+          if (cancelled) return;
+
+          const lines = quotes.flatMap((planQuote) =>
+            (planQuote.lines ?? []).map((line) => ({
+              ...line,
+              serviceCode: planQuote.plan?.code
+                ? `${planQuote.plan.code}:${line.serviceCode ?? ""}`
+                : line.serviceCode,
+            })),
+          );
+          const total = quotes.reduce(
+            (sum, planQuote) => sum + (planQuote.total ?? 0),
+            0,
+          );
+          const currency =
+            quotes.find((planQuote) => planQuote.currency)?.currency ?? "XAF";
+
+          setQuote({ billingPeriod, lines, total, currency });
+        })
+        .catch((error) => {
+          if (!cancelled) {
+            setQuote(null);
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Impossible de calculer le devis",
+            );
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setQuoteLoading(false);
+          }
+        });
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(timer);
+    };
+  }, [open, planCodes, billingPeriod]);
+
+  useEffect(() => {
+    if (!open || planCodes.length === 0) {
+      const timer = globalThis.setTimeout(() => setQuote(null), 0);
+      return () => globalThis.clearTimeout(timer);
+    }
+  }, [open, planCodes.length]);
 
   async function getSessionContext(): Promise<SessionContext> {
     return bffGet<SessionContext>("/api/session/context");
@@ -78,9 +170,12 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
       if (!context.walletId) {
         throw new Error("Aucun wallet disponible. Créez-en un d'abord.");
       }
+      if (!quoteTotal) {
+        throw new Error("Devis indisponible. Réessayez dans un instant.");
+      }
 
       const canOperate = await bffGet<boolean>(
-        `/api/payments/wallets/${context.walletId}/can-operate?amount=${cartTotal}`,
+        `/api/payments/wallets/${context.walletId}/can-operate?amount=${quoteTotal}`,
       );
       if (!canOperate) {
         toast.error("Solde insuffisant. Rechargez votre wallet.");
@@ -125,21 +220,46 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
 
   async function handleMycoolpayCheckout() {
     if (items.length === 0) return;
+    if (items.length > 1) {
+      toast.error("MYCOOLPAY accepte un seul plan commercial par paiement.");
+      return;
+    }
+
+    const planCode = items[0]?.code;
+    if (!planCode) {
+      toast.error("Plan invalide dans le panier");
+      return;
+    }
+
     setCheckingOut("mycoolpay");
     try {
-      const firstPlan = items[0];
-      const order = await bffPost<PaymentOrderResponse>("/api/payments/orders", {
-        amount: cartTotal,
-        provider: "MYCOOLPAY",
-        method: "MOBILE_MONEY",
-        serviceCode: firstPlan?.serviceCodes?.[0] ?? firstPlan?.code,
-        description: `Achat de ${items.length} plan(s)`,
-        idempotencyKey: createCartIdempotencyKey(),
-      });
+      const context = await getSessionContext();
+      if (!context.organizationId) {
+        throw new Error("Organisation non sélectionnée");
+      }
 
-      if (order.redirectUrl) {
+      const checkout = await bffPost<CommercialPlanCheckoutResponse>(
+        `/api/commercial-plans/${planCode}/checkout`,
+        {
+          organizationId: context.organizationId,
+          addOnCodes: [],
+          billingPeriod,
+          provider: "MYCOOLPAY",
+          method: "MOBILE_MONEY",
+          idempotencyKey: createCartIdempotencyKey(planCode),
+        },
+      );
+
+      if (checkout.orderId) {
+        sessionStorage.setItem(
+          COMMERCIAL_PLAN_ORDER_STORAGE_KEY,
+          checkout.orderId,
+        );
+      }
+
+      if (checkout.redirectUrl) {
         clearCart();
-        redirectToPayment(order.redirectUrl);
+        redirectToPayment(checkout.redirectUrl);
         return;
       }
 
@@ -160,7 +280,12 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
         <SheetHeader>
           <SheetTitle>Panier</SheetTitle>
           <SheetDescription>
-            {items.length} article(s) - total {cartTotal.toLocaleString("fr-FR")}
+            {items.length} article(s)
+            {quoteLoading
+              ? " — calcul du devis…"
+              : quote
+                ? ` — total ${quoteTotal.toLocaleString("fr-FR")} ${quoteCurrency}`
+                : ""}
           </SheetDescription>
         </SheetHeader>
 
@@ -170,31 +295,72 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
               Votre panier est vide. Ajoutez des plans depuis la console.
             </p>
           ) : (
-            <ul className="yypay:space-y-4">
-              {items.map((plan) => (
-                <li
-                  key={plan.code}
-                  className="yypay:flex yypay:items-start yypay:justify-between yypay:gap-3"
-                >
-                  <div className="yypay:min-w-0">
-                    <p className="yypay:font-medium yypay:text-navy">
-                      {plan.name}
-                    </p>
-                    <p className="yypay:text-sm yypay:text-secondary">
-                      {plan.price} {plan.currency}
-                    </p>
-                  </div>
+            <>
+              <div className="yypay:mb-4 yypay:flex yypay:gap-2">
+                {(["MONTHLY", "YEARLY"] as const).map((period) => (
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => plan.code && removePlan(plan.code)}
-                    aria-label="Retirer du panier"
+                    key={period}
+                    type="button"
+                    size="sm"
+                    variant={billingPeriod === period ? "default" : "outline"}
+                    className="yypay:flex-1"
+                    onClick={() => setBillingPeriod(period)}
                   >
-                    <Trash2 className="yypay:h-4 yypay:w-4" />
+                    {period === "MONTHLY" ? "Mensuel" : "Annuel"}
                   </Button>
-                </li>
-              ))}
-            </ul>
+                ))}
+              </div>
+              <ul className="yypay:space-y-4">
+                {items.map((plan) => (
+                  <li
+                    key={plan.code}
+                    className="yypay:flex yypay:items-start yypay:justify-between yypay:gap-3"
+                  >
+                    <div className="yypay:min-w-0">
+                      <p className="yypay:font-medium yypay:text-navy">
+                        {plan.name}
+                      </p>
+                      <p className="yypay:text-sm yypay:text-secondary">
+                        {plan.code}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => plan.code && removePlan(plan.code)}
+                      aria-label="Retirer du panier"
+                    >
+                      <Trash2 className="yypay:h-4 yypay:w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              {quote?.lines && quote.lines.length > 0 && (
+                <div
+                  className={cn(
+                    "yypay:mt-4 yypay:rounded-lg yypay:border yypay:border-border yypay:p-3",
+                    "yypay:text-sm yypay:text-secondary",
+                  )}
+                >
+                  <p className="yypay:mb-2 yypay:font-medium yypay:text-navy">
+                    Détail du devis
+                  </p>
+                  <ul className="yypay:space-y-1">
+                    {quote.lines.map((line, index) => (
+                      <li
+                        key={`${line.serviceCode}-${index}`}
+                        className="yypay:flex yypay:justify-between yypay:gap-2"
+                      >
+                        <span>{line.serviceCode}</span>
+                        <span>
+                          {line.amount?.toLocaleString("fr-FR")} {line.currency}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -205,7 +371,7 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
               <div className="yypay:flex yypay:w-full yypay:flex-col yypay:gap-2">
                 <Button
                   onClick={handleWalletCheckout}
-                  disabled={checkingOut !== null}
+                  disabled={checkingOut !== null || quoteLoading || !quote}
                   className="yypay:w-full"
                 >
                   {checkingOut === "wallet" ? (
@@ -218,7 +384,12 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
                 <Button
                   variant="outline"
                   onClick={handleMycoolpayCheckout}
-                  disabled={checkingOut !== null}
+                  disabled={
+                    checkingOut !== null ||
+                    quoteLoading ||
+                    !quote ||
+                    items.length > 1
+                  }
                   className="yypay:w-full"
                 >
                   {checkingOut === "mycoolpay" ? (
@@ -228,6 +399,12 @@ export function CartSheet({ trigger, onCheckoutComplete }: CartSheetProps) {
                   )}
                   Payer via MYCOOLPAY
                 </Button>
+                {items.length > 1 && (
+                  <p className="yypay:text-center yypay:text-xs yypay:text-secondary">
+                    MYCOOLPAY : un seul plan à la fois. Utilisez le wallet pour
+                    plusieurs plans.
+                  </p>
+                )}
               </div>
             </SheetFooter>
           </>

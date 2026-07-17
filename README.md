@@ -24,6 +24,8 @@ cp .env.example .env.local
 | `IWM_API_BASE_URL` | URL de base de l'API IWM |
 | `IWM_CLIENT_ID` | Identifiant client (`X-Client-Id`) |
 | `IWM_API_KEY` | Clé API (`X-Api-Key`) |
+| `IWM_TENANT_ID` | Identifiant tenant Kernel (`X-Tenant-Id`) |
+| `PAYMENT_PAYER_REFERENCE` | Référence payeur MYCOOLPAY (ex. `+237690295069`), injectée côté BFF |
 | `COOKIE_ACCESS_TOKEN` | Nom du cookie httpOnly JWT (défaut : `yy_pay_access_token`) |
 | `COOKIE_REFRESH_TOKEN` | Nom du cookie refresh token |
 | `COOKIE_ORGANIZATION_ID` | Nom du cookie organisation active |
@@ -37,9 +39,11 @@ cp .env.example .env.local
 2. **Login** (`/login`) - identifiants → MFA email → cookie httpOnly posé par le BFF
 3. **Organisations** (`/organizations`) - `discover-contexts` puis `select-context`, cookie `organizationId`
 4. **Console** (`/console`) - wallet, transactions, plans, panier
-5. **Paiement** - via wallet (`purchase` par plan) ou MYCOOLPAY (`initiate` + redirection)
+5. **Paiement** - via wallet (`purchase` par plan), MYCOOLPAY plans commerciaux (`commercial-plans/{planCode}/checkout` + devis serveur), ou recharge wallet provider (`recharge` + `recharge-orders/refresh`)
 
 Le mot de passe n'est **jamais** stocké en cookie : il reste en mémoire (Zustand) uniquement pendant la sélection d'organisation.
+
+Règle sécurité : le front **ne fournit jamais le montant** pour MYCOOLPAY — il choisit le `planCode`, la période (`MONTHLY`/`YEARLY`) et les add-ons ; le Kernel calcule le prix via `POST /api/commercial-plans/{planCode}/quote`. La recharge wallet suit le même principe : montant saisi pour la recharge provider, crédit effectif après `POST /api/payments/wallets/recharge-orders/{orderId}/refresh`.
 
 ## Commandes
 
@@ -64,7 +68,7 @@ npm run lint
 
 - Le BFF pose des cookies **httpOnly** (`secure` en production, `sameSite: lax`)
 - Le client front utilise `bff-client.ts` avec `credentials: "include"` - **aucun** header `Authorization` manuel
-- `iwm-auth-client` lit le token depuis les cookies côté route handler
+- `iwm-auth-client` / `iwm-payment-client` transmettent `X-Client-Id`, `X-Api-Key`, `X-Tenant-Id`
 - Routes utilitaires : `GET /api/session/me`, `GET /api/session/context`
 
 ### Proxy (protection des routes)
@@ -87,7 +91,10 @@ npm run lint
 | POST | `/api/payments/wallets` | createWallet |
 | GET | `/api/payments/wallets/owner/{ownerId}` | getWalletByOwner |
 | GET | `/api/payments/wallets/{walletId}` | getWallet |
-| POST | `/api/payments/wallets/{walletId}/recharge` | recharge |
+| POST | `/api/payments/wallets/{walletId}/recharge` | recharge provider (MYCOOLPAY) |
+| GET | `/api/payments/wallets/{walletId}/recharge-orders` | historique recharges |
+| GET | `/api/payments/wallets/recharge-orders/{orderId}` | détail recharge |
+| POST | `/api/payments/wallets/recharge-orders/{orderId}/refresh` | rafraîchir + créditer wallet |
 | POST | `/api/payments/wallets/{walletId}/pay` | pay |
 | GET | `/api/payments/wallets/{walletId}/transactions` | listTransactions |
 | GET | `/api/payments/wallets/{walletId}/can-operate?amount=` | canOperate |
@@ -95,6 +102,33 @@ npm run lint
 | POST | `/api/payments/orders` | initiate |
 | GET | `/api/payments/orders/{id}` | get |
 | POST | `/api/payments/orders/{id}/refresh` | refresh |
+
+## Endpoints BFF - service bundles
+
+| Méthode | Route | Opération |
+|---------|-------|-----------|
+| GET | `/api/service-pricing` | catalogue prix serveur |
+| POST | `/api/service-bundles/quote` | devis (montant calculé serveur) |
+| POST | `/api/service-bundles/checkout` | lancer checkout MYCOOLPAY/STRIPE |
+| GET | `/api/service-bundles/orders` | historique bundles |
+| GET | `/api/service-bundles/orders/{orderId}` | détail commande bundle |
+| POST | `/api/service-bundles/orders/{orderId}/refresh` | rafraîchir statut + activer services |
+
+Le checkout bundle injecte côté BFF : `clientId`, `payerReference`, `organizationId` (cookie).
+
+## Endpoints BFF - commercial plans
+
+| Méthode | Route | Opération |
+|---------|-------|-----------|
+| POST | `/api/commercial-plans/{planCode}/quote` | devis plan commercial (montant serveur) |
+| POST | `/api/commercial-plans/{planCode}/checkout` | lancer checkout MYCOOLPAY/STRIPE |
+| GET | `/api/commercial-plans/orders` | historique commandes plans |
+| GET | `/api/commercial-plans/orders/{orderId}` | détail commande plan |
+| POST | `/api/commercial-plans/orders/{orderId}/refresh` | rafraîchir statut + activer plan |
+
+Le checkout plan commercial injecte côté BFF : `clientId`, `payerReference`, `organizationId` (cookie).
+
+La recharge wallet injecte côté BFF : `clientId`, `payerReference`, `currency` (défaut `XAF`).
 
 **Non exposé :** `POST /api/payments/orders/callbacks/{provider}` - webhooks → backend IWM direct.
 

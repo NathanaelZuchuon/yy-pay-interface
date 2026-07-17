@@ -199,7 +199,7 @@ export default function LoginPage() {
               Connexion déléguée au Kernel - aucun mot de passe n&apos;est
               stocké.
             </p>
-            <p className="yypay:mt-2 yypay:text-center yypay:text-xs yypay:text-secondary">
+            <p className="yypay:mt-2 yypay:text-center yypay:text-xs yypay:text-primary">
               <Link href="/" className="hover:yypay:text-primary">
                 Retour à l&apos;accueil
               </Link>

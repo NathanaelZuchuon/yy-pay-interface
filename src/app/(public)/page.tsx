@@ -4,22 +4,22 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bffGet } from "@/lib/bff-client";
 import type { components } from "@/types/schemas-payment";
 import {
-    Building2,
-    ChevronRight,
-    CreditCard,
-    Lock,
-    ShieldCheck,
-    ShoppingCart,
+  Building2,
+  ChevronRight,
+  CreditCard,
+  Lock,
+  ShieldCheck,
+  ShoppingCart,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -161,7 +161,7 @@ export default function LandingPage() {
               <div className="yypay:rounded-lg yypay:border yypay:border-border yypay:p-4">
                 <p className="yypay:font-medium yypay:text-navy">Payment</p>
                 <p className="yypay:mt-1 yypay:text-sm yypay:text-secondary">
-                  wallet, transactions, plans, purchase, MYCOOLPAY
+                  wallet, transactions, plans, service-bundles, MYCOOLPAY
                 </p>
               </div>
             </CardContent>
