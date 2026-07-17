@@ -445,3 +445,193 @@ GET /api/payments/wallets/{walletId}/recharge-orders?limit=50
 ```
 
 L'ancienne opération interne `PaymentUseCase.recharge(...)` existe toujours pour les services backend contrôlés, mais elle ne doit pas être exposée aux clients comme crédit direct.
+
+## Façade `/api/plans`
+
+Pour éviter la confusion avec l'ancien `plan_core.plan`, `GET /api/plans` expose maintenant le catalogue commercial réellement utilisable :
+
+```http
+GET /api/plans
+GET /api/plans/{planCode}
+```
+
+Ces routes retournent les plans commerciaux par défaut et personnalisés du catalogue organisation : `STARTER`, `COMMERCE`, `FINANCE`, `OPERATIONS`, `ENTERPRISE`, etc.
+
+Les routes de paiement existent aussi sous `/api/plans` :
+
+```http
+POST /api/plans/{planCode}/quote
+POST /api/plans/{planCode}/checkout
+```
+
+Elles sont des alias fonctionnels de :
+
+```http
+POST /api/commercial-plans/{planCode}/quote
+POST /api/commercial-plans/{planCode}/checkout
+```
+
+## Renouvellement automatique des plans
+
+Le renouvellement automatique est une préférence stockée côté Kernel. Elle indique qu'une organisation veut renouveler un plan avec les mêmes add-ons, période, provider et référence payeur.
+
+Le flux complet attendu est :
+
+1. détecter les souscriptions proches d'expiration ;
+2. lire les préférences `auto-renewal` actives ;
+3. notifier avant expiration ;
+4. créer un ordre de renouvellement et/ou déclencher le paiement provider ;
+5. rafraîchir le paiement, appliquer le plan si succès, ou notifier l'échec/expiration.
+
+Important : le Kernel ne crédite/débite jamais artificiellement. Le renouvellement passe par un `payment_order` provider. Sans mandat/token récurrent provider, le renouvellement génère un checkout à payer par l'utilisateur.
+
+### Données stockées
+
+Préférence :
+
+```txt
+payment_core.commercial_plan_auto_renewal
+```
+
+Ordre de renouvellement généré :
+
+```txt
+payment_core.commercial_plan_renewal_order
+```
+
+Les statuts d'un ordre de renouvellement sont :
+
+```txt
+PENDING_PAYMENT
+ACTIVE
+FAILED
+CANCELLED
+EXPIRED
+```
+
+### Activer le renouvellement automatique
+
+```http
+POST /api/plans/{planCode}/auto-renewal
+```
+
+Alias :
+
+```http
+POST /api/commercial-plans/{planCode}/auto-renewal
+```
+
+Body :
+
+```json
+{
+  "organizationId": "org-uuid",
+  "addOnCodes": ["POINT_OF_SALE_ADDON"],
+  "billingPeriod": "MONTHLY",
+  "clientId": "business-core",
+  "provider": "MYCOOLPAY",
+  "method": "MOBILE_MONEY",
+  "payerReference": "+237690295069"
+}
+```
+
+Le backend valide le plan/add-ons via le même moteur de quote, puis sauvegarde ou réactive la préférence.
+
+### Désactiver le renouvellement automatique
+
+```http
+DELETE /api/plans/{planCode}/auto-renewal?organizationId=org-uuid
+```
+
+Alias :
+
+```http
+DELETE /api/commercial-plans/{planCode}/auto-renewal?organizationId=org-uuid
+```
+
+La ligne n'est pas supprimée : elle passe à `active=false`, pour garder l'historique opérationnel.
+
+### Lister les préférences
+
+```http
+GET /api/plans/auto-renewals?organizationId=org-uuid&limit=50
+```
+
+Alias :
+
+```http
+GET /api/commercial-plans/auto-renewals?organizationId=org-uuid&limit=50
+```
+
+### Exécuter le cycle de renouvellement
+
+Un job planifié côté Kernel exécute périodiquement le cycle suivant. Un endpoint admin permet aussi de le déclencher manuellement :
+
+```http
+POST /api/plans/auto-renewals/process?daysBeforeExpiry=7
+```
+
+Alias :
+
+```http
+POST /api/commercial-plans/auto-renewals/process?daysBeforeExpiry=7
+```
+
+Le traitement :
+
+1. cherche les souscriptions commerciales arrivant à échéance dans la fenêtre donnée ;
+2. ignore les organisations sans auto-renewal actif ;
+3. notifie `RENEWAL_UPCOMING` avant échéance ;
+4. crée un ordre de renouvellement si aucun ordre ouvert n'existe ;
+5. initialise un `payment_order` provider avec le montant recalculé côté serveur ;
+6. stocke l'URL checkout provider dans l'ordre de renouvellement ;
+7. laisse l'ordre en `PENDING_PAYMENT` tant que le provider n'a pas confirmé.
+
+Réponse :
+
+```json
+{
+  "success": true,
+  "data": {
+    "scannedSubscriptions": 12,
+    "eligibleRenewals": 4,
+    "createdOrders": 3,
+    "refreshedOrders": 1,
+    "activatedRenewals": 1,
+    "failedRenewals": 0,
+    "notificationsSent": 5
+  }
+}
+```
+
+### Lire les ordres de renouvellement
+
+```http
+GET /api/plans/renewal-orders?organizationId=org-uuid&limit=50
+GET /api/plans/renewal-orders/{orderId}
+```
+
+Alias :
+
+```http
+GET /api/commercial-plans/renewal-orders?organizationId=org-uuid&limit=50
+GET /api/commercial-plans/renewal-orders/{orderId}
+```
+
+### Rafraîchir un ordre de renouvellement
+
+```http
+POST /api/plans/renewal-orders/{orderId}/refresh
+```
+
+Alias :
+
+```http
+POST /api/commercial-plans/renewal-orders/{orderId}/refresh
+```
+
+Si le paiement provider devient `SUCCESS`, le Kernel applique le plan via le même mécanisme que le checkout initial et l'ordre passe à `ACTIVE`.
+
+Si le paiement provider devient `FAILED` ou `CANCELLED`, l'ordre passe au statut correspondant et le Kernel notifie `RENEWAL_PAYMENT_FAILED`.
+
+Si la souscription expire sans renouvellement actif, le Kernel notifie `SUBSCRIPTION_EXPIRED`. La désactivation effective des services dépendra de la politique commerciale choisie : coupure immédiate, grâce temporaire, ou maintien en lecture seule.

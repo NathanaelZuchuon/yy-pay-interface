@@ -10,10 +10,19 @@ const COOKIE_OPTIONS = {
 export type SessionCookieData = {
   accessToken?: string;
   refreshToken?: string;
+  accessExpiresInSeconds?: number;
+  refreshExpiresInSeconds?: number;
   organizationId?: string;
   actorId?: string;
   walletId?: string;
 };
+
+function cookieMaxAge(seconds?: number) {
+  if (seconds == null || seconds <= 0) {
+    return undefined;
+  }
+  return seconds;
+}
 
 export function getCookieNames() {
   return {
@@ -71,10 +80,16 @@ export function applySessionCookies(
   const names = getCookieNames();
 
   if (data.accessToken) {
-    response.cookies.set(names.accessToken, data.accessToken, COOKIE_OPTIONS);
+    response.cookies.set(names.accessToken, data.accessToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: cookieMaxAge(data.accessExpiresInSeconds),
+    });
   }
   if (data.refreshToken) {
-    response.cookies.set(names.refreshToken, data.refreshToken, COOKIE_OPTIONS);
+    response.cookies.set(names.refreshToken, data.refreshToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: cookieMaxAge(data.refreshExpiresInSeconds),
+    });
   }
   if (data.organizationId) {
     response.cookies.set(
@@ -103,6 +118,10 @@ export function clearSessionCookies(response: NextResponse) {
 
 export function getAccessTokenCookieName() {
   return getCookieNames().accessToken;
+}
+
+export function getRefreshTokenCookieName() {
+  return getCookieNames().refreshToken;
 }
 
 export function getOrganizationIdCookieName() {

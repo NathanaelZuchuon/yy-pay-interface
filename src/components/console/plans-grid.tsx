@@ -1,122 +1,169 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PlansPricingSection } from "@/components/plans/plans-pricing-section";
+import { useCommercialPlanQuotes } from "@/hooks/use-commercial-plan-quotes";
+import { usePlanAutoRenewals } from "@/hooks/use-plan-auto-renewals";
 import { bffGet } from "@/lib/bff-client";
+import { getPlanLabel } from "@/lib/commercial-plan-display";
+import {
+    buildPendingPaymentMessage,
+    canPurchasePlan,
+    getPendingPlanCodes,
+} from "@/lib/plan-subscription";
 import { useCartStore } from "@/stores/cart-store";
 import type { components } from "@/types/schemas-payment";
-import { ShoppingCart } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type PlanResponse = components["schemas"]["PlanResponse"];
+type CommercialPlanResponse = components["schemas"]["CommercialPlanResponse"];
 type SubscriptionResponse = components["schemas"]["SubscriptionResponse"];
+type CommercialPlanOrderResponse =
+  components["schemas"]["CommercialPlanOrderResponse"];
+type BillingPeriod = "MONTHLY" | "YEARLY";
 
-export function PlansGrid() {
-  const [plans, setPlans] = useState<PlanResponse[]>([]);
+type PlansGridProps = {
+  refreshKey?: number;
+};
+
+export function PlansGrid({ refreshKey = 0 }: PlansGridProps) {
+  const [plans, setPlans] = useState<CommercialPlanResponse[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionResponse[]>([]);
+  const [pendingPlanCodes, setPendingPlanCodes] = useState<Set<string>>(
+    new Set(),
+  );
   const [loading, setLoading] = useState(true);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("MONTHLY");
   const addPlan = useCartStore((state) => state.addPlan);
   const hasPlan = useCartStore((state) => state.hasPlan);
+  const { quotes, loading: quotesLoading } = useCommercialPlanQuotes(
+    plans,
+    billingPeriod,
+  );
+  const {
+    renewalsByPlanCode,
+    loading: autoRenewalsLoading,
+    mutatingPlanCode,
+    reload: reloadAutoRenewals,
+    enable: enableAutoRenewal,
+    disable: disableAutoRenewal,
+  } = usePlanAutoRenewals();
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [plansData, subsData, ordersData, session] = await Promise.all([
+        bffGet<CommercialPlanResponse[]>("/api/plans"),
+        bffGet<SubscriptionResponse[]>("/api/plans/subscriptions"),
+        bffGet<CommercialPlanOrderResponse[]>("/api/commercial-plans/orders"),
+        bffGet<{ organizationId?: string | null }>("/api/session/context"),
+      ]);
+      setPlans(Array.isArray(plansData) ? plansData : []);
+      setSubscriptions(Array.isArray(subsData) ? subsData : []);
+      setPendingPlanCodes(
+        getPendingPlanCodes(
+          Array.isArray(ordersData) ? ordersData : [],
+          session.organizationId,
+        ),
+      );
+      await reloadAutoRenewals();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Impossible de charger les plans",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [reloadAutoRenewals]);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [plansData, subsData] = await Promise.all([
-          bffGet<PlanResponse[]>("/api/plans"),
-          bffGet<SubscriptionResponse[]>("/api/plans/subscriptions"),
-        ]);
-        setPlans(Array.isArray(plansData) ? plansData : []);
-        setSubscriptions(Array.isArray(subsData) ? subsData : []);
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Impossible de charger les plans",
-        );
-      } finally {
-        setLoading(false);
+    let cancelled = false;
+    const timer = globalThis.setTimeout(() => {
+      if (!cancelled) {
+        void loadData();
       }
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(timer);
+    };
+  }, [loadData, refreshKey]);
+
+  const purchaseGuard = canPurchasePlan(subscriptions, plans);
+
+  async function handleEnableAutoRenewal(planCode: string) {
+    try {
+      await enableAutoRenewal(planCode, { billingPeriod });
+      toast.success("Renouvellement automatique activé");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible d'activer le renouvellement automatique",
+      );
     }
-    void load();
-  }, []);
+  }
 
-  const subscribedCodes = new Set(
-    subscriptions.map((sub) => sub.planCode).filter(Boolean),
-  );
-
-  if (loading) {
-    return (
-      <div className="yypay:grid yypay:grid-cols-1 yypay:gap-4 md:yypay:grid-cols-2 lg:yypay:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="yypay:h-56" />
-        ))}
-      </div>
-    );
+  async function handleDisableAutoRenewal(planCode: string) {
+    try {
+      await disableAutoRenewal(planCode);
+      toast.success("Renouvellement automatique désactivé");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de désactiver le renouvellement automatique",
+      );
+    }
   }
 
   return (
-    <div className="yypay:grid yypay:grid-cols-1 yypay:gap-4 md:yypay:grid-cols-2 lg:yypay:grid-cols-3">
-      {plans.map((plan) => {
-        const isSubscribed = plan.code ? subscribedCodes.has(plan.code) : false;
-        const inCart = plan.code ? hasPlan(plan.code) : false;
-        return (
-          <Card key={plan.code} className="yypay:flex yypay:flex-col">
-            <CardHeader>
-              <div className="yypay:flex yypay:items-start yypay:justify-between yypay:gap-2">
-                <CardTitle className="yypay:text-lg">{plan.name}</CardTitle>
-                {isSubscribed && <Badge variant="success">Actif</Badge>}
-              </div>
-              <CardDescription>{plan.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="yypay:space-y-3">
-              <p className="yypay:text-2xl yypay:font-bold yypay:text-primary">
-                {plan.price} {plan.currency}
-              </p>
-              <p className="yypay:text-sm yypay:text-secondary">
-                {plan.periodDays} jours
-              </p>
-              <div className="yypay:flex yypay:flex-wrap yypay:gap-2">
-                {(plan.serviceCodes ?? []).map((code) => (
-                  <Badge key={code} variant="secondary">
-                    {code}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                className="yypay:w-full"
-                variant={inCart ? "secondary" : "default"}
-                disabled={isSubscribed || inCart || !plan.code}
-                onClick={() => {
-                  addPlan(plan);
-                  toast.success(`${plan.name} ajouté au panier`);
-                }}
-              >
-                <ShoppingCart className="yypay:h-4 yypay:w-4" />
-                {isSubscribed
-                  ? "Déjà souscrit"
-                  : inCart
-                    ? "Dans le panier"
-                    : "Ajouter au panier"}
-              </Button>
-            </CardFooter>
-          </Card>
-        );
-      })}
-      {plans.length === 0 && (
-        <p className="yypay:col-span-full yypay:text-secondary">
-          Aucun plan disponible.
-        </p>
-      )}
-    </div>
+    <PlansPricingSection
+      plans={plans}
+      loading={loading}
+      quotes={quotes}
+      quotesLoading={quotesLoading}
+      billingPeriod={billingPeriod}
+      onBillingPeriodChange={setBillingPeriod}
+      activeSubscription={purchaseGuard.activeSubscription ?? null}
+      purchaseBlockMessage={purchaseGuard.reason}
+      pendingPlanCodes={pendingPlanCodes}
+      autoRenewalsByPlanCode={renewalsByPlanCode}
+      autoRenewalsLoading={autoRenewalsLoading}
+      autoRenewalMutatingPlanCode={mutatingPlanCode}
+      hasPlanInCart={(planCode) => hasPlan(planCode)}
+      getCtaLabel={() => "Ajouter au panier"}
+      onEnableAutoRenewal={handleEnableAutoRenewal}
+      onDisableAutoRenewal={handleDisableAutoRenewal}
+      onSelectPlan={(plan) => {
+        const planCode = plan.code;
+        if (!planCode) {
+          toast.error("Plan invalide");
+          return;
+        }
+
+        if (!purchaseGuard.allowed) {
+          toast.error(purchaseGuard.reason ?? "Achat de plan indisponible");
+          return;
+        }
+
+        if (pendingPlanCodes.has(planCode)) {
+          toast.error(buildPendingPaymentMessage(planCode));
+          return;
+        }
+
+        if (!quotes[planCode]?.total) {
+          toast.error("Devis indisponible pour ce plan. Réessayez dans un instant.");
+          return;
+        }
+
+        if (hasPlan(planCode)) {
+          return;
+        }
+
+        addPlan(plan);
+        toast.success(`${getPlanLabel(plan)} ajouté au panier`);
+      }}
+    />
   );
 }

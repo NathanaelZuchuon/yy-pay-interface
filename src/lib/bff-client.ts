@@ -61,6 +61,10 @@ export async function bffGet<T>(path: string): Promise<T> {
   return bffFetch<T>(path, { method: "GET" });
 }
 
+export async function bffDelete<T>(path: string): Promise<T> {
+  return bffFetch<T>(path, { method: "DELETE" });
+}
+
 export async function bffPostEnvelope<T>(
   path: string,
   payload?: unknown,

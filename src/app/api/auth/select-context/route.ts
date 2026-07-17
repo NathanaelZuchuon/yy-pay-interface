@@ -29,8 +29,11 @@ export async function POST(request: Request) {
 
   applySessionCookies(response, {
     accessToken: session?.accessToken,
+    refreshToken: session?.refreshToken,
     actorId: session?.actorId,
     organizationId: contextual?.selectedOrganizationId,
+    accessExpiresInSeconds: session?.expiresInSeconds,
+    refreshExpiresInSeconds: session?.refreshExpiresInSeconds,
   });
 
   return response;

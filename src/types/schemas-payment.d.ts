@@ -20,6 +20,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/commercial-plans/{planCode}/auto-renewal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["enableAutoRenewal"];
+        delete: operations["disableAutoRenewal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/{planCode}/auto-renewal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["enableAutoRenewal_1"];
+        delete: operations["disableAutoRenewal_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/service-bundles/quote": {
         parameters: {
             query?: never;
@@ -62,6 +94,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/{planCode}/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["quote_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/{planCode}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkout_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -116,54 +180,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/payments/wallets/recharge-orders/{orderId}/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["refreshWalletRechargeOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/payments/wallets/recharge-orders/{orderId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getWalletRechargeOrder"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/payments/wallets/{walletId}/recharge-orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listWalletRechargeOrders"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/payments/wallets/{walletId}/pay": {
         parameters: {
             query?: never;
@@ -174,6 +190,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/wallets/recharge-orders/{orderId}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refreshRechargeOrder"];
         delete?: never;
         options?: never;
         head?: never;
@@ -228,6 +260,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/commercial-plans/{planCode}/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["quote_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/commercial-plans/{planCode}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkout_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/commercial-plans/orders/{orderId}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refresh_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/commercial-plans/auto-renewals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAutoRenewals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/auto-renewals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAutoRenewals_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/service-pricing": {
         parameters: {
             query?: never;
@@ -268,86 +380,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/commercial-plans/{planCode}/quote": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["quoteCommercialPlan"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/commercial-plans/{planCode}/checkout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["checkoutCommercialPlan"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/commercial-plans/orders/{orderId}/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["refreshCommercialPlanOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/commercial-plans/orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listCommercialPlanOrders"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/commercial-plans/orders/{orderId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getCommercialPlanOrder"];
         put?: never;
         post?: never;
         delete?: never;
@@ -420,6 +452,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/payments/wallets/{walletId}/recharge-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listWalletRechargeOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/payments/wallets/{walletId}/can-operate": {
         parameters: {
             query?: never;
@@ -428,6 +476,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["canOperate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/wallets/recharge-orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getRechargeOrder"];
         put?: never;
         post?: never;
         delete?: never;
@@ -460,6 +524,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/commercial-plans/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["history_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/commercial-plans/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -501,6 +597,47 @@ export interface components {
             periodDays?: number;
             serviceCodes?: string[];
             active?: boolean;
+        };
+        AutoRenewalRequest: {
+            /** Format: uuid */
+            organizationId?: string;
+            addOnCodes?: string[];
+            /** @enum {string} */
+            billingPeriod?: "MONTHLY" | "YEARLY";
+            clientId?: string;
+            /** @enum {string} */
+            provider?: "MYCOOLPAY" | "STRIPE";
+            /** @enum {string} */
+            method?: "MOBILE_MONEY" | "CARD";
+            payerReference?: string;
+        };
+        ApiResponseAutoRenewalResponse: {
+            success?: boolean;
+            data?: components["schemas"]["AutoRenewalResponse"];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        AutoRenewalResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            tenantId?: string;
+            /** Format: uuid */
+            organizationId?: string;
+            planCode?: string;
+            addOnCodes?: string[];
+            billingPeriod?: string;
+            clientId?: string;
+            provider?: string;
+            method?: string;
+            payerReference?: string;
+            active?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         ServiceBundleQuoteRequest: {
             services?: string[];
@@ -568,6 +705,8 @@ export interface components {
             method?: "MOBILE_MONEY" | "CARD";
             payerReference?: string;
             idempotencyKey?: string;
+            callbackUrl?: string;
+            failureCallbackUrl?: string;
         };
         ApiResponseServiceBundleCheckoutResponse: {
             success?: boolean;
@@ -584,6 +723,83 @@ export interface components {
             paymentOrderId?: string;
             /** @enum {string} */
             status?: "PENDING_PAYMENT" | "ACTIVE" | "FAILED" | "CANCELLED";
+            amount?: number;
+            currency?: string;
+            redirectUrl?: string;
+            providerReference?: string;
+        };
+        CommercialPlanQuoteRequest: {
+            addOnCodes?: string[];
+            /** @enum {string} */
+            billingPeriod?: "MONTHLY" | "YEARLY";
+        };
+        ApiResponseCommercialPlanQuoteResponse: {
+            success?: boolean;
+            data?: components["schemas"]["CommercialPlanQuoteResponse"];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        CommercialAddOnResponse: {
+            code?: string;
+            displayName?: string;
+            description?: string;
+            serviceCodes?: string[];
+            compatiblePlanCodes?: string[];
+        };
+        CommercialPlanQuoteResponse: {
+            plan?: components["schemas"]["CommercialPlanResponse"];
+            addOns?: components["schemas"]["CommercialAddOnResponse"][];
+            billingPeriod?: string;
+            lines?: components["schemas"]["ServicePriceResponse"][];
+            total?: number;
+            currency?: string;
+        };
+        CommercialPlanResponse: {
+            code?: string;
+            displayName?: string;
+            description?: string;
+            targetType?: string;
+            packCodes?: string[];
+            serviceCodes?: string[];
+            compatibleAddOnCodes?: string[];
+            systemDefault?: boolean;
+        };
+        CommercialPlanCheckoutRequest: {
+            /** Format: uuid */
+            organizationId?: string;
+            addOnCodes?: string[];
+            /** @enum {string} */
+            billingPeriod?: "MONTHLY" | "YEARLY";
+            clientId?: string;
+            /** @enum {string} */
+            provider?: "MYCOOLPAY" | "STRIPE";
+            /** @enum {string} */
+            method?: "MOBILE_MONEY" | "CARD";
+            payerReference?: string;
+            idempotencyKey?: string;
+            callbackUrl?: string;
+            failureCallbackUrl?: string;
+        };
+        ApiResponseCommercialPlanCheckoutResponse: {
+            success?: boolean;
+            data?: components["schemas"]["CommercialPlanCheckoutResponse"];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        CommercialPlanCheckoutResponse: {
+            /** Format: uuid */
+            orderId?: string;
+            /** Format: uuid */
+            paymentOrderId?: string;
+            /** @enum {string} */
+            status?: "PENDING_PAYMENT" | "ACTIVE" | "FAILED" | "CANCELLED";
+            planCode?: string;
+            addOnCodes?: string[];
+            services?: string[];
             amount?: number;
             currency?: string;
             redirectUrl?: string;
@@ -636,6 +852,47 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        WalletRechargeRequest: {
+            amount?: number;
+            currency?: string;
+            clientId?: string;
+            /** @enum {string} */
+            provider?: "MYCOOLPAY" | "STRIPE";
+            /** @enum {string} */
+            method?: "MOBILE_MONEY" | "CARD";
+            payerReference?: string;
+            idempotencyKey?: string;
+            callbackUrl?: string;
+            failureCallbackUrl?: string;
+        };
+        ApiResponseWalletRechargeResponse: {
+            success?: boolean;
+            data?: components["schemas"]["WalletRechargeResponse"];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        WalletRechargeResponse: {
+            /** Format: uuid */
+            orderId?: string;
+            /** Format: uuid */
+            walletId?: string;
+            /** Format: uuid */
+            paymentOrderId?: string;
+            /** Format: uuid */
+            transactionId?: string;
+            /** @enum {string} */
+            status?: "PENDING_PAYMENT" | "RECHARGED" | "FAILED" | "CANCELLED";
+            amount?: number;
+            currency?: string;
+            redirectUrl?: string;
+            providerReference?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
         TransactionRequest: {
             amount?: number;
             reference?: string;
@@ -673,6 +930,7 @@ export interface components {
             payerReference?: string;
             description?: string;
             callbackUrl?: string;
+            failureCallbackUrl?: string;
         };
         ApiResponsePaymentOrderResponse: {
             success?: boolean;
@@ -708,6 +966,44 @@ export interface components {
             /** Format: date-time */
             timestamp?: string;
         };
+        ApiResponseCommercialPlanOrderResponse: {
+            success?: boolean;
+            data?: components["schemas"]["CommercialPlanOrderResponse"];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        CommercialPlanOrderResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            tenantId?: string;
+            /** Format: uuid */
+            organizationId?: string;
+            planCode?: string;
+            addOnCodes?: string[];
+            services?: string[];
+            billingPeriod?: string;
+            amount?: number;
+            currency?: string;
+            /** Format: uuid */
+            paymentOrderId?: string;
+            /** @enum {string} */
+            status?: "PENDING_PAYMENT" | "ACTIVE" | "FAILED" | "CANCELLED";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        ApiResponseListAutoRenewalResponse: {
+            success?: boolean;
+            data?: components["schemas"]["AutoRenewalResponse"][];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
         ApiResponseListServicePriceResponse: {
             success?: boolean;
             data?: components["schemas"]["ServicePriceResponse"][];
@@ -724,9 +1020,17 @@ export interface components {
             /** Format: date-time */
             timestamp?: string;
         };
-        ApiResponseListPlanResponse: {
+        ApiResponseListCommercialPlanResponse: {
             success?: boolean;
-            data?: components["schemas"]["PlanResponse"][];
+            data?: components["schemas"]["CommercialPlanResponse"][];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        ApiResponseCommercialPlanResponse: {
+            success?: boolean;
+            data?: components["schemas"]["CommercialPlanResponse"];
             message?: string;
             errorCode?: string;
             /** Format: date-time */
@@ -748,6 +1052,14 @@ export interface components {
             /** Format: date-time */
             timestamp?: string;
         };
+        ApiResponseListWalletRechargeResponse: {
+            success?: boolean;
+            data?: components["schemas"]["WalletRechargeResponse"][];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
         ApiResponseBoolean: {
             success?: boolean;
             data?: boolean;
@@ -764,147 +1076,17 @@ export interface components {
             /** Format: date-time */
             timestamp?: string;
         };
-        ApiResponseVoid: {
-            success?: boolean;
-            data?: unknown;
-            message?: string;
-            errorCode?: string;
-            /** Format: date-time */
-            timestamp?: string;
-        };
-        WalletRechargeRequest: {
-            amount?: number;
-            currency?: string;
-            clientId?: string;
-            /** @enum {string} */
-            provider?: "MYCOOLPAY" | "STRIPE";
-            /** @enum {string} */
-            method?: "MOBILE_MONEY" | "CARD";
-            payerReference?: string;
-            idempotencyKey?: string;
-        };
-        WalletRechargeOrderResponse: {
-            /** Format: uuid */
-            orderId?: string;
-            /** Format: uuid */
-            walletId?: string;
-            /** Format: uuid */
-            paymentOrderId?: string;
-            /** Format: uuid */
-            transactionId?: string;
-            /** @enum {string} */
-            status?: "PENDING_PAYMENT" | "RECHARGED" | "FAILED" | "CANCELLED";
-            amount?: number;
-            currency?: string;
-            redirectUrl?: string;
-            providerReference?: string;
-        };
-        ApiResponseWalletRechargeOrderResponse: {
-            success?: boolean;
-            data?: components["schemas"]["WalletRechargeOrderResponse"];
-            message?: string;
-            errorCode?: string;
-            /** Format: date-time */
-            timestamp?: string;
-        };
-        ApiResponseListWalletRechargeOrderResponse: {
-            success?: boolean;
-            data?: components["schemas"]["WalletRechargeOrderResponse"][];
-            message?: string;
-            errorCode?: string;
-            /** Format: date-time */
-            timestamp?: string;
-        };
-        CommercialPlanQuoteRequest: {
-            addOnCodes?: string[];
-            /** @enum {string} */
-            billingPeriod?: "MONTHLY" | "YEARLY";
-        };
-        CommercialPlanQuoteResponse: {
-            plan?: {
-                code?: string;
-            };
-            addOns?: {
-                code?: string;
-            }[];
-            billingPeriod?: string;
-            lines?: components["schemas"]["CommercialPlanQuoteLine"][];
-            total?: number;
-            currency?: string;
-        };
-        CommercialPlanQuoteLine: {
-            serviceCode?: string;
-            amount?: number;
-            currency?: string;
-        };
-        ApiResponseCommercialPlanQuoteResponse: {
-            success?: boolean;
-            data?: components["schemas"]["CommercialPlanQuoteResponse"];
-            message?: string;
-            errorCode?: string;
-            /** Format: date-time */
-            timestamp?: string;
-        };
-        CommercialPlanCheckoutRequest: {
-            /** Format: uuid */
-            organizationId?: string;
-            addOnCodes?: string[];
-            /** @enum {string} */
-            billingPeriod?: "MONTHLY" | "YEARLY";
-            clientId?: string;
-            /** @enum {string} */
-            provider?: "MYCOOLPAY" | "STRIPE";
-            /** @enum {string} */
-            method?: "MOBILE_MONEY" | "CARD";
-            payerReference?: string;
-            idempotencyKey?: string;
-        };
-        CommercialPlanCheckoutResponse: {
-            /** Format: uuid */
-            orderId?: string;
-            /** Format: uuid */
-            paymentOrderId?: string;
-            /** @enum {string} */
-            status?: "PENDING_PAYMENT" | "ACTIVE" | "FAILED" | "CANCELLED";
-            amount?: number;
-            currency?: string;
-            redirectUrl?: string;
-            providerReference?: string;
-        };
-        ApiResponseCommercialPlanCheckoutResponse: {
-            success?: boolean;
-            data?: components["schemas"]["CommercialPlanCheckoutResponse"];
-            message?: string;
-            errorCode?: string;
-            /** Format: date-time */
-            timestamp?: string;
-        };
-        CommercialPlanOrderResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: uuid */
-            organizationId?: string;
-            planCode?: string;
-            addOnCodes?: string[];
-            billingPeriod?: string;
-            amount?: number;
-            currency?: string;
-            /** Format: uuid */
-            paymentOrderId?: string;
-            /** @enum {string} */
-            status?: "PENDING_PAYMENT" | "ACTIVE" | "FAILED" | "CANCELLED";
-        };
-        ApiResponseCommercialPlanOrderResponse: {
-            success?: boolean;
-            data?: components["schemas"]["CommercialPlanOrderResponse"];
-            message?: string;
-            errorCode?: string;
-            /** Format: date-time */
-            timestamp?: string;
-        };
         ApiResponseListCommercialPlanOrderResponse: {
             success?: boolean;
             data?: components["schemas"]["CommercialPlanOrderResponse"][];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        ApiResponseVoid: {
+            success?: boolean;
+            data?: unknown;
             message?: string;
             errorCode?: string;
             /** Format: date-time */
@@ -936,7 +1118,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponsePlanResponse"];
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanResponse"];
                 };
             };
         };
@@ -985,6 +1167,106 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    enableAutoRenewal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutoRenewalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseAutoRenewalResponse"];
+                };
+            };
+        };
+    };
+    disableAutoRenewal: {
+        parameters: {
+            query: {
+                organizationId: string;
+            };
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseAutoRenewalResponse"];
+                };
+            };
+        };
+    };
+    enableAutoRenewal_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutoRenewalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseAutoRenewalResponse"];
+                };
+            };
+        };
+    };
+    disableAutoRenewal_1: {
+        parameters: {
+            query: {
+                organizationId: string;
+            };
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseAutoRenewalResponse"];
                 };
             };
         };
@@ -1055,6 +1337,58 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseServiceBundleCheckoutResponse"];
+                };
+            };
+        };
+    };
+    quote_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CommercialPlanQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanQuoteResponse"];
+                };
+            };
+        };
+    };
+    checkout_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommercialPlanCheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanCheckoutResponse"];
                 };
             };
         };
@@ -1130,75 +1464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseWalletRechargeOrderResponse"];
-                };
-            };
-        };
-    };
-    refreshWalletRechargeOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseWalletRechargeOrderResponse"];
-                };
-            };
-        };
-    };
-    getWalletRechargeOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseWalletRechargeOrderResponse"];
-                };
-            };
-        };
-    };
-    listWalletRechargeOrders: {
-        parameters: {
-            query?: {
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                walletId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseListWalletRechargeOrderResponse"];
+                    "*/*": components["schemas"]["ApiResponseWalletRechargeResponse"];
                 };
             };
         };
@@ -1225,6 +1491,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseTransactionResponse"];
+                };
+            };
+        };
+    };
+    refreshRechargeOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWalletRechargeResponse"];
                 };
             };
         };
@@ -1325,6 +1613,126 @@ export interface operations {
             };
         };
     };
+    quote_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CommercialPlanQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanQuoteResponse"];
+                };
+            };
+        };
+    };
+    checkout_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommercialPlanCheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanCheckoutResponse"];
+                };
+            };
+        };
+    };
+    refresh_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanOrderResponse"];
+                };
+            };
+        };
+    };
+    listAutoRenewals: {
+        parameters: {
+            query?: {
+                organizationId?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListAutoRenewalResponse"];
+                };
+            };
+        };
+    };
+    listAutoRenewals_1: {
+        parameters: {
+            query?: {
+                organizationId?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListAutoRenewalResponse"];
+                };
+            };
+        };
+    };
     pricing: {
         parameters: {
             query?: never;
@@ -1389,124 +1797,6 @@ export interface operations {
             };
         };
     };
-    quoteCommercialPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planCode: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CommercialPlanQuoteRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseCommercialPlanQuoteResponse"];
-                };
-            };
-        };
-    };
-    checkoutCommercialPlan: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                planCode: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CommercialPlanCheckoutRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseCommercialPlanCheckoutResponse"];
-                };
-            };
-        };
-    };
-    refreshCommercialPlanOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseCommercialPlanOrderResponse"];
-                };
-            };
-        };
-    };
-    listCommercialPlanOrders: {
-        parameters: {
-            query?: {
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseListCommercialPlanOrderResponse"];
-                };
-            };
-        };
-    };
-    getCommercialPlanOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ApiResponseCommercialPlanOrderResponse"];
-                };
-            };
-        };
-    };
     listPlans: {
         parameters: {
             query?: never;
@@ -1522,7 +1812,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseListPlanResponse"];
+                    "*/*": components["schemas"]["ApiResponseListCommercialPlanResponse"];
                 };
             };
         };
@@ -1591,6 +1881,30 @@ export interface operations {
             };
         };
     };
+    listWalletRechargeOrders: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                walletId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWalletRechargeResponse"];
+                };
+            };
+        };
+    };
     canOperate: {
         parameters: {
             query: {
@@ -1611,6 +1925,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseBoolean"];
+                };
+            };
+        };
+    };
+    getRechargeOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWalletRechargeResponse"];
                 };
             };
         };
@@ -1655,6 +1991,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponsePaymentOrderResponse"];
+                };
+            };
+        };
+    };
+    history_2: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListCommercialPlanOrderResponse"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseCommercialPlanOrderResponse"];
                 };
             };
         };

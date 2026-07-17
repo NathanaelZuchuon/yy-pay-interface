@@ -5,7 +5,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "yypay:rounded-xl yypay:border yypay:border-border yypay:bg-white yypay:shadow-sm",
+        "yypay:rounded-xl yypay:border yypay:border-border yypay:bg-card yypay:text-card-foreground yypay:shadow-card",
         className,
       )}
       {...props}
@@ -25,7 +25,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
   return (
     <h3
-      className={cn("yypay:text-xl yypay:font-semibold yypay:text-navy", className)}
+      className={cn("yypay:text-xl yypay:font-semibold yypay:text-foreground", className)}
       {...props}
     />
   );
@@ -34,7 +34,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
 function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
-      className={cn("yypay:text-sm yypay:text-secondary", className)}
+      className={cn("yypay:text-sm yypay:text-muted-foreground", className)}
       {...props}
     />
   );

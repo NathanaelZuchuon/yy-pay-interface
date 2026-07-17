@@ -3,11 +3,11 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -81,7 +81,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-surface">
+    <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
       <SiteHeader />
       <main className="yypay:flex yypay:flex-1 yypay:items-center yypay:justify-center yypay:px-4 yypay:py-10">
         <Card className="yypay:w-full yypay:max-w-lg yypay:shadow-md">

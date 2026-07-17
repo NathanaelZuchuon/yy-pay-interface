@@ -34,7 +34,7 @@ function SheetOverlay({
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "yypay:fixed yypay:inset-0 yypay:z-50 yypay:bg-navy/40",
+        "yypay:fixed yypay:inset-0 yypay:z-50 yypay:bg-black/50",
         className,
       )}
       {...props}
@@ -55,7 +55,7 @@ function SheetContent({
       <SheetOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "yypay:fixed yypay:z-50 yypay:flex yypay:flex-col yypay:bg-white yypay:shadow-lg yypay:transition yypay:ease-in-out",
+          "yypay:fixed yypay:z-50 yypay:flex yypay:flex-col yypay:bg-card yypay:shadow-lg yypay:transition yypay:ease-in-out",
           side === "right" &&
             "yypay:inset-y-0 yypay:right-0 yypay:h-full yypay:w-full yypay:max-w-md yypay:border-l yypay:border-border sm:yypay:max-w-lg",
           side === "bottom" &&
@@ -65,7 +65,7 @@ function SheetContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="yypay:absolute yypay:right-4 yypay:top-4 yypay:rounded-sm yypay:text-secondary hover:yypay:text-navy">
+        <DialogPrimitive.Close className="yypay:absolute yypay:right-4 yypay:top-4 yypay:rounded-sm yypay:text-secondary hover:yypay:text-foreground">
           <X className="yypay:h-4 yypay:w-4" />
           <span className="yypay:sr-only">Fermer</span>
         </DialogPrimitive.Close>
@@ -78,7 +78,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "yypay:flex yypay:flex-col yypay:gap-1.5 yypay:p-6 yypay:pb-0",
+        "yypay:flex yypay:flex-col yypay:gap-2 yypay:p-6 yypay:pb-0",
         className,
       )}
       {...props}
@@ -92,7 +92,7 @@ function SheetTitle({
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("yypay:text-lg yypay:font-semibold yypay:text-navy", className)}
+      className={cn("yypay:text-lg yypay:font-semibold yypay:text-foreground", className)}
       {...props}
     />
   );
@@ -104,7 +104,7 @@ function SheetDescription({
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("yypay:text-sm yypay:text-secondary", className)}
+      className={cn("yypay:text-sm yypay:text-muted-foreground", className)}
       {...props}
     />
   );
@@ -114,7 +114,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "yypay:mt-auto yypay:flex yypay:flex-col yypay:gap-2 yypay:p-6 yypay:pt-4",
+        "yypay:mt-auto yypay:flex yypay:flex-col yypay:gap-4 yypay:p-6 yypay:pt-6",
         className,
       )}
       {...props}

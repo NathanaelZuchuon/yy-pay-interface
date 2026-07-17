@@ -27,7 +27,10 @@ export async function POST(request: Request) {
   if (loginData?.accessToken) {
     applySessionCookies(response, {
       accessToken: loginData.accessToken,
+      refreshToken: loginData.refreshToken,
       actorId: loginData.actorId,
+      accessExpiresInSeconds: loginData.expiresInSeconds,
+      refreshExpiresInSeconds: loginData.refreshExpiresInSeconds,
     });
   }
 

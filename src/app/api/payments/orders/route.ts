@@ -1,6 +1,7 @@
 import { readJsonBody, toBffResponse } from "@/lib/bff-utils";
 import { getIwmEnv } from "@/lib/env";
 import { createIwmPaymentClient } from "@/lib/iwm-payment-client";
+import { withPaymentCallbacks } from "@/lib/payment-callback";
 import type { components } from "@/types/schemas-payment";
 
 type InitiatePaymentRequest = components["schemas"]["InitiatePaymentRequest"];
@@ -24,15 +25,11 @@ export async function POST(request: Request) {
   const { clientId, payerReference } = getIwmEnv();
   const client = createIwmPaymentClient(request);
   const result = await client.POST("/api/payments/orders", {
-    body: {
+    body: withPaymentCallbacks({
       ...(body ?? {}),
       clientId: body?.clientId ?? clientId,
       payerReference: body?.payerReference ?? payerReference,
-      callbackUrl:
-        body?.callbackUrl ??
-        process.env.PAYMENT_CALLBACK_URL ??
-        undefined,
-    },
+    }),
   });
   return toBffResponse(result);
 }

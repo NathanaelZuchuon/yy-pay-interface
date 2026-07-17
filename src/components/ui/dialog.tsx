@@ -34,7 +34,7 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "yypay:fixed yypay:inset-0 yypay:z-50 yypay:bg-navy/40",
+        "yypay:fixed yypay:inset-0 yypay:z-50 yypay:bg-black/50",
         className,
       )}
       {...props}
@@ -52,13 +52,13 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "yypay:fixed yypay:left-1/2 yypay:top-1/2 yypay:z-50 yypay:w-[calc(100%-2rem)] yypay:max-w-md yypay:-translate-x-1/2 yypay:-translate-y-1/2 yypay:rounded-xl yypay:border yypay:border-border yypay:bg-white yypay:p-6 yypay:shadow-lg",
+          "yypay:fixed yypay:left-1/2 yypay:top-1/2 yypay:z-50 yypay:flex yypay:w-[calc(100%-2rem)] yypay:max-w-md yypay:-translate-x-1/2 yypay:-translate-y-1/2 yypay:flex-col yypay:gap-6 yypay:rounded-xl yypay:border yypay:border-border yypay:bg-card yypay:p-6 yypay:shadow-lg",
           className,
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="yypay:absolute yypay:right-4 yypay:top-4 yypay:rounded-sm yypay:text-secondary hover:yypay:text-navy">
+        <DialogPrimitive.Close className="yypay:absolute yypay:right-4 yypay:top-4 yypay:rounded-sm yypay:text-secondary hover:yypay:text-foreground">
           <X className="yypay:h-4 yypay:w-4" />
           <span className="yypay:sr-only">Fermer</span>
         </DialogPrimitive.Close>
@@ -70,7 +70,7 @@ function DialogContent({
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("yypay:flex yypay:flex-col yypay:gap-1.5", className)}
+      className={cn("yypay:flex yypay:flex-col yypay:gap-2", className)}
       {...props}
     />
   );
@@ -82,7 +82,7 @@ function DialogTitle({
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("yypay:text-lg yypay:font-semibold yypay:text-navy", className)}
+      className={cn("yypay:text-lg yypay:font-semibold yypay:text-foreground", className)}
       {...props}
     />
   );
@@ -94,7 +94,7 @@ function DialogDescription({
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("yypay:text-sm yypay:text-secondary", className)}
+      className={cn("yypay:text-sm yypay:text-muted-foreground", className)}
       {...props}
     />
   );
@@ -104,7 +104,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "yypay:flex yypay:flex-col-reverse yypay:gap-2 sm:yypay:flex-row sm:yypay:justify-end",
+        "yypay:flex yypay:flex-col-reverse yypay:gap-3 sm:yypay:flex-row sm:yypay:justify-end",
         className,
       )}
       {...props}

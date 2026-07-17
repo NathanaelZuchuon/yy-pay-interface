@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bffGet, bffPost } from "@/lib/bff-client";
 import { RECHARGE_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
+import { formatMycoolpayLabel } from "@/lib/wallet-labels";
 import type { components } from "@/types/schemas-auth";
 import type { components as PaymentComponents } from "@/types/schemas-payment";
 import { Loader2, Plus, Wallet } from "lucide-react";
@@ -30,8 +31,8 @@ import { toast } from "sonner";
 
 type UserAccountResponse = components["schemas"]["UserAccountResponse"];
 type WalletResponse = PaymentComponents["schemas"]["WalletResponse"];
-type WalletRechargeOrderResponse =
-  PaymentComponents["schemas"]["WalletRechargeOrderResponse"];
+type WalletRechargeResponse =
+  PaymentComponents["schemas"]["WalletRechargeResponse"];
 type SessionContext = {
   organizationId: string | null;
   actorId: string | null;
@@ -53,8 +54,10 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [recharging, setRecharging] = useState(false);
+  const [walletName, setWalletName] = useState("");
   const [rechargeAmount, setRechargeAmount] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false);
 
   const loadWallet = useCallback(async () => {
     setLoading(true);
@@ -99,15 +102,23 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
 
   async function handleCreateWallet() {
     const actorId = context?.actorId ?? user?.actorId;
+    const trimmedName = walletName.trim();
     if (!actorId) return;
+    if (!trimmedName) {
+      toast.error("Donnez un nom à votre wallet");
+      return;
+    }
+
     setCreating(true);
     try {
       const created = await bffPost<WalletResponse>("/api/payments/wallets", {
         ownerId: actorId,
-        ownerName: user?.username ?? user?.email ?? "Utilisateur",
+        ownerName: trimmedName,
       });
       setWallet(created);
       onWalletChange?.(created);
+      setCreateDialogOpen(false);
+      setWalletName("");
       toast.success("Wallet créé avec succès");
     } catch (error) {
       toast.error(
@@ -127,7 +138,7 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
     }
     setRecharging(true);
     try {
-      const recharge = await bffPost<WalletRechargeOrderResponse>(
+      const recharge = await bffPost<WalletRechargeResponse>(
         `/api/payments/wallets/${wallet.id}/recharge`,
         {
           amount,
@@ -143,7 +154,7 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
       }
 
       if (recharge.redirectUrl) {
-        setDialogOpen(false);
+        setRechargeDialogOpen(false);
         setRechargeAmount("");
         globalThis.location.assign(recharge.redirectUrl);
         return;
@@ -159,6 +170,9 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
     }
   }
 
+  const walletLabel = wallet?.ownerName?.trim() || "Mon wallet";
+  const mycoolpayLabel = formatMycoolpayLabel(wallet?.ownerName);
+
   if (loading) {
     return <Skeleton className="yypay:h-40 yypay:w-full" />;
   }
@@ -169,12 +183,12 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
         <div>
           <CardTitle className="yypay:flex yypay:items-center yypay:gap-2">
             <Wallet className="yypay:h-5 yypay:w-5 yypay:text-primary" />
-            Mon wallet
+            {walletLabel}
           </CardTitle>
           <CardDescription>Solde et opérations</CardDescription>
         </div>
         {wallet && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={rechargeDialogOpen} onOpenChange={setRechargeDialogOpen}>
             <DialogTrigger asChild>
               <Button size="icon" variant="outline" aria-label="Recharger">
                 <Plus className="yypay:h-4 yypay:w-4" />
@@ -182,13 +196,13 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Recharger le wallet</DialogTitle>
+                <DialogTitle>Recharger {walletLabel}</DialogTitle>
                 <DialogDescription>
                   Paiement sécurisé via MYCOOLPAY. Le solde sera crédité après
                   confirmation du fournisseur.
                 </DialogDescription>
               </DialogHeader>
-              <div className="yypay:space-y-2">
+              <div className="yypay:space-y-3">
                 <Label htmlFor="amount">Montant (XAF)</Label>
                 <Input
                   id="amount"
@@ -204,7 +218,7 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
                   {recharging && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Recharger via MYCOOLPAY
+                  Recharger via {mycoolpayLabel}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -213,23 +227,50 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
       </CardHeader>
       <CardContent>
         {!wallet ? (
-          <div className="yypay:space-y-4">
+          <div className="yypay:space-y-6">
             <p className="yypay:text-sm yypay:text-secondary">
-              Vous n&apos;avez pas encore de wallet. Créez-en un pour commencer.
+              Vous n&apos;avez pas encore de wallet. Donnez-lui un nom pour le
+              retrouver dans vos transactions et paiements MYCOOLPAY.
             </p>
-            <Button onClick={handleCreateWallet} disabled={creating}>
-              {creating && (
-                <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
-              )}
-              Créer mon wallet
-            </Button>
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>Créer mon wallet</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Créer un wallet</DialogTitle>
+                  <DialogDescription>
+                    Choisissez un nom pour identifier ce wallet dans l&apos;historique
+                    et sur MYCOOLPAY.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="yypay:space-y-3">
+                  <Label htmlFor="wallet-name">Nom du wallet</Label>
+                  <Input
+                    id="wallet-name"
+                    value={walletName}
+                    onChange={(e) => setWalletName(e.target.value)}
+                    placeholder="Ex. Wallet principal"
+                    maxLength={80}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleCreateWallet} disabled={creating}>
+                    {creating && (
+                      <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
+                    )}
+                    Créer mon wallet
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         ) : (
           <div>
-            <p className="yypay:text-3xl yypay:font-bold yypay:text-navy">
+            <p className="yypay:text-3xl yypay:font-bold yypay:text-foreground">
               {wallet.balance?.toLocaleString("fr-FR") ?? 0}
             </p>
-            <p className="yypay:mt-1 yypay:text-sm yypay:text-secondary">
+            <p className="yypay:mt-2 yypay:text-sm yypay:text-secondary">
               Dernière mise à jour :{" "}
               {wallet.updatedAt
                 ? new Date(wallet.updatedAt).toLocaleString("fr-FR")

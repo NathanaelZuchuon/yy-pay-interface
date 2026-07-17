@@ -11,7 +11,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { bffPost, bffPostEnvelope } from "@/lib/bff-client";
+import { bffGet, bffPost, bffPostEnvelope } from "@/lib/bff-client";
 import { useAuthWizardStore } from "@/stores/auth-wizard-store";
 import type { components } from "@/types/schemas-auth";
 import { Building2, Loader2 } from "lucide-react";
@@ -21,13 +21,66 @@ import { toast } from "sonner";
 
 type DiscoverLoginContextsResponse =
   components["schemas"]["DiscoverLoginContextsResponse"];
-type UserOrganizationAccessResponse =
-  components["schemas"]["UserOrganizationAccessResponse"];
+type UserMembershipResponse = components["schemas"]["UserMembershipResponse"];
 
-type OrgOption = UserOrganizationAccessResponse & {
-  contextId: string;
-  selectionToken: string;
+type OrgOption = {
+  organizationId: string;
+  organizationCode?: string;
+  displayName?: string;
+  longName?: string;
+  services?: string[];
+  contextId?: string;
+  selectionToken?: string;
 };
+
+function mapMembershipsToOrgs(
+  memberships: UserMembershipResponse[],
+): OrgOption[] {
+  const grouped = new Map<string, OrgOption>();
+
+  for (const membership of memberships) {
+    if (!membership.organizationId) continue;
+
+    const existing = grouped.get(membership.organizationId);
+    const badges = [
+      ...(existing?.services ?? []),
+      membership.roleName,
+      ...(membership.permissions ?? []),
+    ].filter((value): value is string => Boolean(value));
+
+    grouped.set(membership.organizationId, {
+      organizationId: membership.organizationId,
+      organizationCode: membership.organizationCode,
+      displayName: membership.organizationName,
+      longName: membership.organizationName,
+      services: [...new Set(badges)],
+    });
+  }
+
+  return Array.from(grouped.values());
+}
+
+function flattenDiscoveredContexts(
+  data: DiscoverLoginContextsResponse,
+): OrgOption[] {
+  return (
+    data.contexts?.flatMap((context) =>
+      (context.organizations ?? [])
+        .filter((org): org is typeof org & { organizationId: string } =>
+          Boolean(org.organizationId),
+        )
+        .map((org) => ({
+          organizationId: org.organizationId,
+          organizationCode: org.organizationCode,
+          displayName: org.displayName,
+          longName: org.longName,
+          services: org.services,
+          contextId: context.contextId,
+          selectionToken: data.selectionToken,
+        })),
+    ) ?? []
+  );
+}
 
 export default function OrganizationsPage() {
   const router = useRouter();
@@ -38,31 +91,67 @@ export default function OrganizationsPage() {
   const [orgs, setOrgs] = useState<OrgOption[]>([]);
 
   useEffect(() => {
-    async function loadOrganizations() {
+    async function loadFromDiscoverContexts(): Promise<OrgOption[] | null> {
       if (!hasCredentials()) {
-        toast.error("Session expirée, reconnectez-vous");
-        router.replace("/login");
-        return;
+        return null;
       }
+
+      const result = await bffPostEnvelope<DiscoverLoginContextsResponse>(
+        "/api/auth/discover-contexts",
+        { principal: email, password },
+      );
+      const data = result.data;
+      if (!data?.selectionToken) {
+        throw new Error("Impossible de récupérer les organisations");
+      }
+
+      const discovered = flattenDiscoveredContexts(data);
+      if (discovered.length === 0) {
+        return null;
+      }
+
+      setSelectionToken(data.selectionToken);
+      return discovered;
+    }
+
+    async function loadFromMemberships(): Promise<OrgOption[] | null> {
+      const memberships = await bffGet<UserMembershipResponse[]>(
+        "/api/auth/me/memberships",
+      );
+      if (!Array.isArray(memberships)) {
+        return null;
+      }
+
+      const mapped = mapMembershipsToOrgs(memberships);
+      return mapped.length > 0 ? mapped : null;
+    }
+
+    async function loadOrganizations() {
       try {
-        const result = await bffPostEnvelope<DiscoverLoginContextsResponse>(
-          "/api/auth/discover-contexts",
-          { principal: email, password },
-        );
-        const data = result.data;
-        if (!data?.selectionToken) {
-          throw new Error("Impossible de récupérer les organisations");
+        // Après connexion, discover-contexts est la source fiable (contextId + selectionToken).
+        const discovered = await loadFromDiscoverContexts();
+        if (discovered) {
+          setOrgs(discovered);
+          return;
         }
-        setSelectionToken(data.selectionToken);
-        const flattened =
-          data.contexts?.flatMap((context) =>
-            (context.organizations ?? []).map((org) => ({
-              ...org,
-              contextId: context.contextId ?? "",
-              selectionToken: data.selectionToken ?? "",
-            })),
-          ) ?? [];
-        setOrgs(flattened);
+
+        try {
+          const fromMemberships = await loadFromMemberships();
+          if (fromMemberships) {
+            setOrgs(fromMemberships);
+            return;
+          }
+        } catch {
+          // Session expirée ou memberships indisponibles.
+        }
+
+        if (!hasCredentials()) {
+          toast.error("Session expirée, reconnectez-vous");
+          router.replace("/login");
+          return;
+        }
+
+        toast.error("Aucune organisation disponible pour ce compte");
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -73,26 +162,65 @@ export default function OrganizationsPage() {
         setLoading(false);
       }
     }
+
     void loadOrganizations();
   }, [email, password, hasCredentials, router, setSelectionToken]);
 
   const uniqueOrgs = useMemo(() => {
     const map = new Map<string, OrgOption>();
     for (const org of orgs) {
-      if (org.organizationId) {
-        map.set(org.organizationId, org);
-      }
+      map.set(org.organizationId, org);
     }
     return Array.from(map.values());
   }, [orgs]);
 
-  async function handleSelect(org: OrgOption) {
-    if (!org.organizationId || !org.contextId) return;
-    setSelecting(org.organizationId);
-    try {
-      await bffPost("/api/auth/select-context", {
+  async function resolveSelectionContext(org: OrgOption) {
+    if (org.selectionToken && org.contextId) {
+      return {
         selectionToken: org.selectionToken,
         contextId: org.contextId,
+      };
+    }
+
+    if (!hasCredentials()) {
+      throw new Error("Session expirée, reconnectez-vous");
+    }
+
+    const result = await bffPostEnvelope<DiscoverLoginContextsResponse>(
+      "/api/auth/discover-contexts",
+      { principal: email, password },
+    );
+    const data = result.data;
+    if (!data?.selectionToken) {
+      throw new Error("Impossible de récupérer les organisations");
+    }
+
+    setSelectionToken(data.selectionToken);
+
+    const matchingContext = data.contexts?.find((context) =>
+      context.organizations?.some(
+        (item) => item.organizationId === org.organizationId,
+      ),
+    );
+    const contextId = matchingContext?.contextId;
+    if (!contextId) {
+      throw new Error("Contexte introuvable pour cette organisation");
+    }
+
+    return {
+      selectionToken: data.selectionToken,
+      contextId,
+    };
+  }
+
+  async function handleSelect(org: OrgOption) {
+    setSelecting(org.organizationId);
+    try {
+      const { selectionToken, contextId } = await resolveSelectionContext(org);
+
+      await bffPost("/api/auth/select-context", {
+        selectionToken,
+        contextId,
         organizationId: org.organizationId,
       });
       clearSensitive();
@@ -110,14 +238,14 @@ export default function OrganizationsPage() {
   }
 
   return (
-    <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-surface">
+    <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
       <ConsoleHeader title="Choisir une organisation" />
       <main className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:px-4 yypay:py-8 sm:yypay:px-6">
         <div className="yypay:mb-8">
-          <h1 className="yypay:text-2xl yypay:font-bold yypay:text-navy sm:yypay:text-3xl">
+          <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
             Vos organisations
           </h1>
-          <p className="yypay:mt-2 yypay:text-secondary">
+          <p className="yypay:mt-2 yypay:text-muted-foreground">
             Sélectionnez l&apos;organisation que vous souhaitez gérer.
           </p>
         </div>

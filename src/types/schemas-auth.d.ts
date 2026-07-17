@@ -532,6 +532,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/me/memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["myMemberships"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -703,9 +719,14 @@ export interface components {
             mfaChannel?: string;
             accessToken?: string;
             sessionToken?: string;
+            refreshToken?: string;
             tokenType?: string;
             /** Format: int64 */
             expiresInSeconds?: number;
+            /** Format: int64 */
+            refreshExpiresInSeconds?: number;
+            /** Format: date-time */
+            refreshExpiresAt?: string;
             sharedSession?: components["schemas"]["SharedSsoSessionResponse"];
             authorities?: string[];
             organizations?: components["schemas"]["UserOrganizationAccessResponse"][];
@@ -979,6 +1000,26 @@ export interface components {
             captchaVerificationToken?: string;
             /** Format: int64 */
             expiresInSeconds?: number;
+        };
+        ApiResponseListUserMembershipResponse: {
+            success?: boolean;
+            data?: components["schemas"]["UserMembershipResponse"][];
+            message?: string;
+            errorCode?: string;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        UserMembershipResponse: {
+            /** Format: uuid */
+            tenantId?: string;
+            /** Format: uuid */
+            organizationId?: string;
+            organizationCode?: string;
+            organizationName?: string;
+            roleCode?: string;
+            roleName?: string;
+            scopeType?: string;
+            permissions?: string[];
         };
     };
     responses: never;
@@ -1759,6 +1800,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseUserAccountResponse"];
+                };
+            };
+        };
+    };
+    myMemberships: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListUserMembershipResponse"];
                 };
             };
         };

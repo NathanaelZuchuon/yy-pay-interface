@@ -10,38 +10,42 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bffGet } from "@/lib/bff-client";
-import type { components } from "@/types/schemas-payment";
+import {
+    formatActivityAmount,
+    formatActivityType,
+    getActivityStatusVariant,
+    type PaymentActivityItem,
+} from "@/lib/payment-activity";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type TransactionResponse = components["schemas"]["TransactionResponse"];
-
 type TransactionListProps = {
   walletId?: string | null;
+  walletName?: string | null;
 };
 
-export function TransactionList({ walletId }: TransactionListProps) {
-  const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
+export function TransactionList({ walletId, walletName }: TransactionListProps) {
+  const [activity, setActivity] = useState<PaymentActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       if (!walletId) {
-        setTransactions([]);
+        setActivity([]);
         setLoading(false);
         return;
       }
       setLoading(true);
       try {
-        const data = await bffGet<TransactionResponse[]>(
-          `/api/payments/wallets/${walletId}/transactions`,
+        const data = await bffGet<PaymentActivityItem[]>(
+          `/api/payments/activity?walletId=${walletId}&limit=100`,
         );
-        setTransactions(Array.isArray(data) ? data : []);
+        setActivity(Array.isArray(data) ? data : []);
       } catch (error) {
         toast.error(
           error instanceof Error
             ? error.message
-            : "Impossible de charger les transactions",
+            : "Impossible de charger l'historique",
         );
       } finally {
         setLoading(false);
@@ -49,6 +53,8 @@ export function TransactionList({ walletId }: TransactionListProps) {
     }
     void load();
   }, [walletId]);
+
+  const walletLabel = walletName?.trim() || "Mon wallet";
 
   if (loading) {
     return <Skeleton className="yypay:h-64 yypay:w-full" />;
@@ -58,7 +64,7 @@ export function TransactionList({ walletId }: TransactionListProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Transactions</CardTitle>
+          <CardTitle>Historique</CardTitle>
           <CardDescription>Créez un wallet pour voir l&apos;historique.</CardDescription>
         </CardHeader>
       </Card>
@@ -68,13 +74,16 @@ export function TransactionList({ walletId }: TransactionListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Historique des transactions</CardTitle>
-        <CardDescription>{transactions.length} transaction(s)</CardDescription>
+        <CardTitle>Historique - {walletLabel}</CardTitle>
+        <CardDescription>
+          {activity.length} opération(s) - wallet, recharges, paiements, plans et
+          bundles (tous statuts).
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        {transactions.length === 0 ? (
+        {activity.length === 0 ? (
           <p className="yypay:text-sm yypay:text-secondary">
-            Aucune transaction pour le moment.
+            Aucune opération pour le moment.
           </p>
         ) : (
           <>
@@ -86,50 +95,63 @@ export function TransactionList({ walletId }: TransactionListProps) {
                     <th className="yypay:py-2 yypay:pr-4">Type</th>
                     <th className="yypay:py-2 yypay:pr-4">Montant</th>
                     <th className="yypay:py-2 yypay:pr-4">Statut</th>
-                    <th className="yypay:py-2">Réf.</th>
+                    <th className="yypay:py-2">Détail</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} className="yypay:border-b yypay:border-border/60">
+                  {activity.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="yypay:border-b yypay:border-border/60"
+                    >
                       <td className="yypay:py-3 yypay:pr-4">
-                        {tx.createdAt
-                          ? new Date(tx.createdAt).toLocaleString("fr-FR")
+                        {item.createdAt
+                          ? new Date(item.createdAt).toLocaleString("fr-FR")
                           : "-"}
                       </td>
-                      <td className="yypay:py-3 yypay:pr-4">{tx.type}</td>
-                      <td className="yypay:py-3 yypay:pr-4 yypay:font-medium">
-                        {tx.amount}
+                      <td className="yypay:py-3 yypay:pr-4 yypay:font-medium yypay:text-foreground">
+                        {formatActivityType(item)}
                       </td>
                       <td className="yypay:py-3 yypay:pr-4">
-                        <Badge variant="secondary">{tx.status}</Badge>
+                        {formatActivityAmount(item)}
                       </td>
-                      <td className="yypay:py-3">{tx.reference}</td>
+                      <td className="yypay:py-3 yypay:pr-4">
+                        <Badge variant={getActivityStatusVariant(item.status)}>
+                          {item.status}
+                        </Badge>
+                      </td>
+                      <td className="yypay:py-3 yypay:text-secondary">
+                        {item.detail ?? item.reference ?? "-"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <div className="yypay:space-y-3 md:yypay:hidden">
-              {transactions.map((tx) => (
+              {activity.map((item) => (
                 <div
-                  key={tx.id}
+                  key={item.id}
                   className="yypay:rounded-lg yypay:border yypay:border-border yypay:p-4"
                 >
-                  <div className="yypay:flex yypay:items-center yypay:justify-between">
-                    <p className="yypay:font-medium yypay:text-navy">{tx.type}</p>
-                    <Badge variant="secondary">{tx.status}</Badge>
+                  <div className="yypay:flex yypay:items-center yypay:justify-between yypay:gap-3">
+                    <p className="yypay:font-medium yypay:text-foreground">
+                      {formatActivityType(item)}
+                    </p>
+                    <Badge variant={getActivityStatusVariant(item.status)}>
+                      {item.status}
+                    </Badge>
                   </div>
-                  <p className="yypay:mt-1 yypay:text-lg yypay:font-bold">
-                    {tx.amount}
+                  <p className="yypay:mt-3 yypay:text-lg yypay:font-bold">
+                    {formatActivityAmount(item)}
                   </p>
                   <p className="yypay:mt-1 yypay:text-xs yypay:text-secondary">
-                    {tx.createdAt
-                      ? new Date(tx.createdAt).toLocaleString("fr-FR")
+                    {item.createdAt
+                      ? new Date(item.createdAt).toLocaleString("fr-FR")
                       : "-"}
                   </p>
                   <p className="yypay:mt-1 yypay:text-xs yypay:text-secondary">
-                    {tx.reference}
+                    {item.detail ?? item.reference ?? "-"}
                   </p>
                 </div>
               ))}

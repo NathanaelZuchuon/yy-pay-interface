@@ -1,6 +1,7 @@
 import { asJsonBody, readJsonBody, toBffResponse } from "@/lib/bff-utils";
 import { getIwmEnv } from "@/lib/env";
 import { createIwmPaymentClient } from "@/lib/iwm-payment-client";
+import { withPaymentCallbacks } from "@/lib/payment-callback";
 import { getSessionFromRequest } from "@/lib/session-cookies";
 import type { components } from "@/types/schemas-payment";
 
@@ -18,12 +19,12 @@ export async function POST(
   const client = createIwmPaymentClient(request);
   const result = await client.POST("/api/commercial-plans/{planCode}/checkout", {
     params: { path: { planCode } },
-    body: {
+    body: withPaymentCallbacks({
       ...asJsonBody(body),
       clientId: body?.clientId ?? clientId,
       payerReference: body?.payerReference ?? payerReference,
       organizationId: body?.organizationId ?? session.organizationId,
-    },
+    }),
   });
   return toBffResponse(result);
 }

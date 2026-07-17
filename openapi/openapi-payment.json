@@ -45,7 +45,7 @@
 			  "content": {
 				"*/*": {
 				  "schema": {
-					"$ref": "#/components/schemas/ApiResponsePlanResponse"
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanResponse"
 				  }
 				}
 			  }
@@ -112,6 +112,160 @@
 				"*/*": {
 				  "schema": {
 					"$ref": "#/components/schemas/ApiResponseVoid"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/commercial-plans/{planCode}/auto-renewal": {
+		"post": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "enableAutoRenewal",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			}
+		  ],
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/AutoRenewalRequest"
+				}
+			  }
+			},
+			"required": true
+		  },
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseAutoRenewalResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		},
+		"delete": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "disableAutoRenewal",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			},
+			{
+			  "name": "organizationId",
+			  "in": "query",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseAutoRenewalResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/plans/{planCode}/auto-renewal": {
+		"post": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "enableAutoRenewal_1",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			}
+		  ],
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/AutoRenewalRequest"
+				}
+			  }
+			},
+			"required": true
+		  },
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseAutoRenewalResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		},
+		"delete": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "disableAutoRenewal_1",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			},
+			{
+			  "name": "organizationId",
+			  "in": "query",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseAutoRenewalResponse"
 				  }
 				}
 			  }
@@ -203,6 +357,85 @@
 				"*/*": {
 				  "schema": {
 					"$ref": "#/components/schemas/ApiResponseServiceBundleCheckoutResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/plans/{planCode}/quote": {
+		"post": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "quote_1",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			}
+		  ],
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/CommercialPlanQuoteRequest"
+				}
+			  }
+			}
+		  },
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanQuoteResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/plans/{planCode}/checkout": {
+		"post": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "checkout_1",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			}
+		  ],
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/CommercialPlanCheckoutRequest"
+				}
+			  }
+			},
+			"required": true
+		  },
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanCheckoutResponse"
 				  }
 				}
 			  }
@@ -311,109 +544,7 @@
 			  "content": {
 				"*/*": {
 				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseWalletRechargeOrderResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/payments/wallets/recharge-orders/{orderId}/refresh": {
-		"post": {
-		  "tags": [
-			"payment-controller"
-		  ],
-		  "operationId": "refreshWalletRechargeOrder",
-		  "parameters": [
-			{
-			  "name": "orderId",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string",
-				"format": "uuid"
-			  }
-			}
-		  ],
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseWalletRechargeOrderResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/payments/wallets/recharge-orders/{orderId}": {
-		"get": {
-		  "tags": [
-			"payment-controller"
-		  ],
-		  "operationId": "getWalletRechargeOrder",
-		  "parameters": [
-			{
-			  "name": "orderId",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string",
-				"format": "uuid"
-			  }
-			}
-		  ],
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseWalletRechargeOrderResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/payments/wallets/{walletId}/recharge-orders": {
-		"get": {
-		  "tags": [
-			"payment-controller"
-		  ],
-		  "operationId": "listWalletRechargeOrders",
-		  "parameters": [
-			{
-			  "name": "walletId",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string",
-				"format": "uuid"
-			  }
-			},
-			{
-			  "name": "limit",
-			  "in": "query",
-			  "required": false,
-			  "schema": {
-				"type": "integer",
-				"format": "int32"
-			  }
-			}
-		  ],
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseListWalletRechargeOrderResponse"
+					"$ref": "#/components/schemas/ApiResponseWalletRechargeResponse"
 				  }
 				}
 			  }
@@ -455,6 +586,37 @@
 				"*/*": {
 				  "schema": {
 					"$ref": "#/components/schemas/ApiResponseTransactionResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/payments/wallets/recharge-orders/{orderId}/refresh": {
+		"post": {
+		  "tags": [
+			"payment-controller"
+		  ],
+		  "operationId": "refreshRechargeOrder",
+		  "parameters": [
+			{
+			  "name": "orderId",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseWalletRechargeResponse"
 				  }
 				}
 			  }
@@ -604,6 +766,198 @@
 		  }
 		}
 	  },
+	  "/api/commercial-plans/{planCode}/quote": {
+		"post": {
+		  "tags": [
+			"commercial-plan-checkout-controller"
+		  ],
+		  "operationId": "quote_2",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			}
+		  ],
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/CommercialPlanQuoteRequest"
+				}
+			  }
+			}
+		  },
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanQuoteResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/commercial-plans/{planCode}/checkout": {
+		"post": {
+		  "tags": [
+			"commercial-plan-checkout-controller"
+		  ],
+		  "operationId": "checkout_2",
+		  "parameters": [
+			{
+			  "name": "planCode",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string"
+			  }
+			}
+		  ],
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/CommercialPlanCheckoutRequest"
+				}
+			  }
+			},
+			"required": true
+		  },
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanCheckoutResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/commercial-plans/orders/{orderId}/refresh": {
+		"post": {
+		  "tags": [
+			"commercial-plan-checkout-controller"
+		  ],
+		  "operationId": "refresh_2",
+		  "parameters": [
+			{
+			  "name": "orderId",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanOrderResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/commercial-plans/auto-renewals": {
+		"get": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "listAutoRenewals",
+		  "parameters": [
+			{
+			  "name": "organizationId",
+			  "in": "query",
+			  "required": false,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			},
+			{
+			  "name": "limit",
+			  "in": "query",
+			  "required": false,
+			  "schema": {
+				"type": "integer",
+				"format": "int32",
+				"default": 50
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseListAutoRenewalResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/plans/auto-renewals": {
+		"get": {
+		  "tags": [
+			"plan-commercial-alias-controller"
+		  ],
+		  "operationId": "listAutoRenewals_1",
+		  "parameters": [
+			{
+			  "name": "organizationId",
+			  "in": "query",
+			  "required": false,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			},
+			{
+			  "name": "limit",
+			  "in": "query",
+			  "required": false,
+			  "schema": {
+				"type": "integer",
+				"format": "int32",
+				"default": 50
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseListAutoRenewalResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
 	  "/api/service-pricing": {
 		"get": {
 		  "tags": [
@@ -687,179 +1041,6 @@
 		  }
 		}
 	  },
-	  "/api/commercial-plans/{planCode}/quote": {
-		"post": {
-		  "tags": [
-			"commercial-plan-controller"
-		  ],
-		  "operationId": "quoteCommercialPlan",
-		  "parameters": [
-			{
-			  "name": "planCode",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string"
-			  }
-			}
-		  ],
-		  "requestBody": {
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/CommercialPlanQuoteRequest"
-				}
-			  }
-			},
-			"required": true
-		  },
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseCommercialPlanQuoteResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/commercial-plans/{planCode}/checkout": {
-		"post": {
-		  "tags": [
-			"commercial-plan-controller"
-		  ],
-		  "operationId": "checkoutCommercialPlan",
-		  "parameters": [
-			{
-			  "name": "planCode",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string"
-			  }
-			}
-		  ],
-		  "requestBody": {
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/CommercialPlanCheckoutRequest"
-				}
-			  }
-			},
-			"required": true
-		  },
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseCommercialPlanCheckoutResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/commercial-plans/orders/{orderId}/refresh": {
-		"post": {
-		  "tags": [
-			"commercial-plan-controller"
-		  ],
-		  "operationId": "refreshCommercialPlanOrder",
-		  "parameters": [
-			{
-			  "name": "orderId",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string",
-				"format": "uuid"
-			  }
-			}
-		  ],
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseCommercialPlanOrderResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/commercial-plans/orders": {
-		"get": {
-		  "tags": [
-			"commercial-plan-controller"
-		  ],
-		  "operationId": "listCommercialPlanOrders",
-		  "parameters": [
-			{
-			  "name": "limit",
-			  "in": "query",
-			  "required": false,
-			  "schema": {
-				"type": "integer",
-				"format": "int32"
-			  }
-			}
-		  ],
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseListCommercialPlanOrderResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "/api/commercial-plans/orders/{orderId}": {
-		"get": {
-		  "tags": [
-			"commercial-plan-controller"
-		  ],
-		  "operationId": "getCommercialPlanOrder",
-		  "parameters": [
-			{
-			  "name": "orderId",
-			  "in": "path",
-			  "required": true,
-			  "schema": {
-				"type": "string",
-				"format": "uuid"
-			  }
-			}
-		  ],
-		  "responses": {
-			"200": {
-			  "description": "OK",
-			  "content": {
-				"*/*": {
-				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseCommercialPlanOrderResponse"
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  },
 	  "/api/plans": {
 		"get": {
 		  "tags": [
@@ -872,7 +1053,7 @@
 			  "content": {
 				"*/*": {
 				  "schema": {
-					"$ref": "#/components/schemas/ApiResponseListPlanResponse"
+					"$ref": "#/components/schemas/ApiResponseListCommercialPlanResponse"
 				  }
 				}
 			  }
@@ -962,6 +1143,47 @@
 		  }
 		}
 	  },
+	  "/api/payments/wallets/{walletId}/recharge-orders": {
+		"get": {
+		  "tags": [
+			"payment-controller"
+		  ],
+		  "operationId": "listWalletRechargeOrders",
+		  "parameters": [
+			{
+			  "name": "walletId",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			},
+			{
+			  "name": "limit",
+			  "in": "query",
+			  "required": false,
+			  "schema": {
+				"type": "integer",
+				"format": "int32",
+				"default": 50
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseListWalletRechargeResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
 	  "/api/payments/wallets/{walletId}/can-operate": {
 		"get": {
 		  "tags": [
@@ -994,6 +1216,37 @@
 				"*/*": {
 				  "schema": {
 					"$ref": "#/components/schemas/ApiResponseBoolean"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/payments/wallets/recharge-orders/{orderId}": {
+		"get": {
+		  "tags": [
+			"payment-controller"
+		  ],
+		  "operationId": "getRechargeOrder",
+		  "parameters": [
+			{
+			  "name": "orderId",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseWalletRechargeResponse"
 				  }
 				}
 			  }
@@ -1056,6 +1309,69 @@
 				"*/*": {
 				  "schema": {
 					"$ref": "#/components/schemas/ApiResponsePaymentOrderResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/commercial-plans/orders": {
+		"get": {
+		  "tags": [
+			"commercial-plan-checkout-controller"
+		  ],
+		  "operationId": "history_2",
+		  "parameters": [
+			{
+			  "name": "limit",
+			  "in": "query",
+			  "required": false,
+			  "schema": {
+				"type": "integer",
+				"format": "int32",
+				"default": 50
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseListCommercialPlanOrderResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/api/commercial-plans/orders/{orderId}": {
+		"get": {
+		  "tags": [
+			"commercial-plan-checkout-controller"
+		  ],
+		  "operationId": "get_2",
+		  "parameters": [
+			{
+			  "name": "orderId",
+			  "in": "path",
+			  "required": true,
+			  "schema": {
+				"type": "string",
+				"format": "uuid"
+			  }
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseCommercialPlanOrderResponse"
 				  }
 				}
 			  }
@@ -1150,6 +1466,121 @@
 			},
 			"active": {
 			  "type": "boolean"
+			}
+		  }
+		},
+		"AutoRenewalRequest": {
+		  "type": "object",
+		  "properties": {
+			"organizationId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"addOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"billingPeriod": {
+			  "type": "string",
+			  "enum": [
+				"MONTHLY",
+				"YEARLY"
+			  ]
+			},
+			"clientId": {
+			  "type": "string"
+			},
+			"provider": {
+			  "type": "string",
+			  "enum": [
+				"MYCOOLPAY",
+				"STRIPE"
+			  ]
+			},
+			"method": {
+			  "type": "string",
+			  "enum": [
+				"MOBILE_MONEY",
+				"CARD"
+			  ]
+			},
+			"payerReference": {
+			  "type": "string"
+			}
+		  }
+		},
+		"ApiResponseAutoRenewalResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "$ref": "#/components/schemas/AutoRenewalResponse"
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"AutoRenewalResponse": {
+		  "type": "object",
+		  "properties": {
+			"id": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"tenantId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"organizationId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"planCode": {
+			  "type": "string"
+			},
+			"addOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"billingPeriod": {
+			  "type": "string"
+			},
+			"clientId": {
+			  "type": "string"
+			},
+			"provider": {
+			  "type": "string"
+			},
+			"method": {
+			  "type": "string"
+			},
+			"payerReference": {
+			  "type": "string"
+			},
+			"active": {
+			  "type": "boolean"
+			},
+			"createdAt": {
+			  "type": "string",
+			  "format": "date-time"
+			},
+			"updatedAt": {
+			  "type": "string",
+			  "format": "date-time"
 			}
 		  }
 		},
@@ -1345,6 +1776,12 @@
 			},
 			"idempotencyKey": {
 			  "type": "string"
+			},
+			"callbackUrl": {
+			  "type": "string"
+			},
+			"failureCallbackUrl": {
+			  "type": "string"
 			}
 		  }
 		},
@@ -1388,6 +1825,259 @@
 				"FAILED",
 				"CANCELLED"
 			  ]
+			},
+			"amount": {
+			  "type": "number"
+			},
+			"currency": {
+			  "type": "string"
+			},
+			"redirectUrl": {
+			  "type": "string"
+			},
+			"providerReference": {
+			  "type": "string"
+			}
+		  }
+		},
+		"CommercialPlanQuoteRequest": {
+		  "type": "object",
+		  "properties": {
+			"addOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"billingPeriod": {
+			  "type": "string",
+			  "enum": [
+				"MONTHLY",
+				"YEARLY"
+			  ]
+			}
+		  }
+		},
+		"ApiResponseCommercialPlanQuoteResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "$ref": "#/components/schemas/CommercialPlanQuoteResponse"
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"CommercialAddOnResponse": {
+		  "type": "object",
+		  "properties": {
+			"code": {
+			  "type": "string"
+			},
+			"displayName": {
+			  "type": "string"
+			},
+			"description": {
+			  "type": "string"
+			},
+			"serviceCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"compatiblePlanCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			}
+		  }
+		},
+		"CommercialPlanQuoteResponse": {
+		  "type": "object",
+		  "properties": {
+			"plan": {
+			  "$ref": "#/components/schemas/CommercialPlanResponse"
+			},
+			"addOns": {
+			  "type": "array",
+			  "items": {
+				"$ref": "#/components/schemas/CommercialAddOnResponse"
+			  }
+			},
+			"billingPeriod": {
+			  "type": "string"
+			},
+			"lines": {
+			  "type": "array",
+			  "items": {
+				"$ref": "#/components/schemas/ServicePriceResponse"
+			  }
+			},
+			"total": {
+			  "type": "number"
+			},
+			"currency": {
+			  "type": "string"
+			}
+		  }
+		},
+		"CommercialPlanResponse": {
+		  "type": "object",
+		  "properties": {
+			"code": {
+			  "type": "string"
+			},
+			"displayName": {
+			  "type": "string"
+			},
+			"description": {
+			  "type": "string"
+			},
+			"targetType": {
+			  "type": "string"
+			},
+			"packCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"serviceCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"compatibleAddOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"systemDefault": {
+			  "type": "boolean"
+			}
+		  }
+		},
+		"CommercialPlanCheckoutRequest": {
+		  "type": "object",
+		  "properties": {
+			"organizationId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"addOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"billingPeriod": {
+			  "type": "string",
+			  "enum": [
+				"MONTHLY",
+				"YEARLY"
+			  ]
+			},
+			"clientId": {
+			  "type": "string"
+			},
+			"provider": {
+			  "type": "string",
+			  "enum": [
+				"MYCOOLPAY",
+				"STRIPE"
+			  ]
+			},
+			"method": {
+			  "type": "string",
+			  "enum": [
+				"MOBILE_MONEY",
+				"CARD"
+			  ]
+			},
+			"payerReference": {
+			  "type": "string"
+			},
+			"idempotencyKey": {
+			  "type": "string"
+			},
+			"callbackUrl": {
+			  "type": "string"
+			},
+			"failureCallbackUrl": {
+			  "type": "string"
+			}
+		  }
+		},
+		"ApiResponseCommercialPlanCheckoutResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "$ref": "#/components/schemas/CommercialPlanCheckoutResponse"
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"CommercialPlanCheckoutResponse": {
+		  "type": "object",
+		  "properties": {
+			"orderId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"paymentOrderId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"status": {
+			  "type": "string",
+			  "enum": [
+				"PENDING_PAYMENT",
+				"ACTIVE",
+				"FAILED",
+				"CANCELLED"
+			  ]
+			},
+			"planCode": {
+			  "type": "string"
+			},
+			"addOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"services": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
 			},
 			"amount": {
 			  "type": "number"
@@ -1516,6 +2206,117 @@
 			}
 		  }
 		},
+		"WalletRechargeRequest": {
+		  "type": "object",
+		  "properties": {
+			"amount": {
+			  "type": "number"
+			},
+			"currency": {
+			  "type": "string"
+			},
+			"clientId": {
+			  "type": "string"
+			},
+			"provider": {
+			  "type": "string",
+			  "enum": [
+				"MYCOOLPAY",
+				"STRIPE"
+			  ]
+			},
+			"method": {
+			  "type": "string",
+			  "enum": [
+				"MOBILE_MONEY",
+				"CARD"
+			  ]
+			},
+			"payerReference": {
+			  "type": "string"
+			},
+			"idempotencyKey": {
+			  "type": "string"
+			},
+			"callbackUrl": {
+			  "type": "string"
+			},
+			"failureCallbackUrl": {
+			  "type": "string"
+			}
+		  }
+		},
+		"ApiResponseWalletRechargeResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "$ref": "#/components/schemas/WalletRechargeResponse"
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"WalletRechargeResponse": {
+		  "type": "object",
+		  "properties": {
+			"orderId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"walletId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"paymentOrderId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"transactionId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"status": {
+			  "type": "string",
+			  "enum": [
+				"PENDING_PAYMENT",
+				"RECHARGED",
+				"FAILED",
+				"CANCELLED"
+			  ]
+			},
+			"amount": {
+			  "type": "number"
+			},
+			"currency": {
+			  "type": "string"
+			},
+			"redirectUrl": {
+			  "type": "string"
+			},
+			"providerReference": {
+			  "type": "string"
+			},
+			"createdAt": {
+			  "type": "string",
+			  "format": "date-time"
+			},
+			"updatedAt": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
 		"TransactionRequest": {
 		  "type": "object",
 		  "properties": {
@@ -1617,6 +2418,9 @@
 			},
 			"callbackUrl": {
 			  "type": "string"
+			},
+			"failureCallbackUrl": {
+			  "type": "string"
 			}
 		  }
 		},
@@ -1711,6 +2515,113 @@
 			}
 		  }
 		},
+		"ApiResponseCommercialPlanOrderResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "$ref": "#/components/schemas/CommercialPlanOrderResponse"
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"CommercialPlanOrderResponse": {
+		  "type": "object",
+		  "properties": {
+			"id": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"tenantId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"organizationId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"planCode": {
+			  "type": "string"
+			},
+			"addOnCodes": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"services": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
+			},
+			"billingPeriod": {
+			  "type": "string"
+			},
+			"amount": {
+			  "type": "number"
+			},
+			"currency": {
+			  "type": "string"
+			},
+			"paymentOrderId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"status": {
+			  "type": "string",
+			  "enum": [
+				"PENDING_PAYMENT",
+				"ACTIVE",
+				"FAILED",
+				"CANCELLED"
+			  ]
+			},
+			"createdAt": {
+			  "type": "string",
+			  "format": "date-time"
+			},
+			"updatedAt": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"ApiResponseListAutoRenewalResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "type": "array",
+			  "items": {
+				"$ref": "#/components/schemas/AutoRenewalResponse"
+			  }
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
 		"ApiResponseListServicePriceResponse": {
 		  "type": "object",
 		  "properties": {
@@ -1759,7 +2670,7 @@
 			}
 		  }
 		},
-		"ApiResponseListPlanResponse": {
+		"ApiResponseListCommercialPlanResponse": {
 		  "type": "object",
 		  "properties": {
 			"success": {
@@ -1768,8 +2679,29 @@
 			"data": {
 			  "type": "array",
 			  "items": {
-				"$ref": "#/components/schemas/PlanResponse"
+				"$ref": "#/components/schemas/CommercialPlanResponse"
 			  }
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"ApiResponseCommercialPlanResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "$ref": "#/components/schemas/CommercialPlanResponse"
 			},
 			"message": {
 			  "type": "string"
@@ -1831,6 +2763,30 @@
 			}
 		  }
 		},
+		"ApiResponseListWalletRechargeResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "type": "array",
+			  "items": {
+				"$ref": "#/components/schemas/WalletRechargeResponse"
+			  }
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
 		"ApiResponseBoolean": {
 		  "type": "object",
 		  "properties": {
@@ -1876,405 +2832,6 @@
 			}
 		  }
 		},
-		"ApiResponseVoid": {
-		  "type": "object",
-		  "properties": {
-			"success": {
-			  "type": "boolean"
-			},
-			"data": {
-  
-			},
-			"message": {
-			  "type": "string"
-			},
-			"errorCode": {
-			  "type": "string"
-			},
-			"timestamp": {
-			  "type": "string",
-			  "format": "date-time"
-			}
-		  }
-		},
-		"WalletRechargeRequest": {
-		  "type": "object",
-		  "properties": {
-			"amount": {
-			  "type": "number"
-			},
-			"currency": {
-			  "type": "string"
-			},
-			"clientId": {
-			  "type": "string"
-			},
-			"provider": {
-			  "type": "string",
-			  "enum": [
-				"MYCOOLPAY",
-				"STRIPE"
-			  ]
-			},
-			"method": {
-			  "type": "string",
-			  "enum": [
-				"MOBILE_MONEY",
-				"CARD"
-			  ]
-			},
-			"payerReference": {
-			  "type": "string"
-			},
-			"idempotencyKey": {
-			  "type": "string"
-			}
-		  }
-		},
-		"WalletRechargeOrderResponse": {
-		  "type": "object",
-		  "properties": {
-			"orderId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"walletId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"paymentOrderId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"transactionId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"status": {
-			  "type": "string",
-			  "enum": [
-				"PENDING_PAYMENT",
-				"RECHARGED",
-				"FAILED",
-				"CANCELLED"
-			  ]
-			},
-			"amount": {
-			  "type": "number"
-			},
-			"currency": {
-			  "type": "string"
-			},
-			"redirectUrl": {
-			  "type": "string"
-			},
-			"providerReference": {
-			  "type": "string"
-			}
-		  }
-		},
-		"ApiResponseWalletRechargeOrderResponse": {
-		  "type": "object",
-		  "properties": {
-			"success": {
-			  "type": "boolean"
-			},
-			"data": {
-			  "$ref": "#/components/schemas/WalletRechargeOrderResponse"
-			},
-			"message": {
-			  "type": "string"
-			},
-			"errorCode": {
-			  "type": "string"
-			},
-			"timestamp": {
-			  "type": "string",
-			  "format": "date-time"
-			}
-		  }
-		},
-		"ApiResponseListWalletRechargeOrderResponse": {
-		  "type": "object",
-		  "properties": {
-			"success": {
-			  "type": "boolean"
-			},
-			"data": {
-			  "type": "array",
-			  "items": {
-				"$ref": "#/components/schemas/WalletRechargeOrderResponse"
-			  }
-			},
-			"message": {
-			  "type": "string"
-			},
-			"errorCode": {
-			  "type": "string"
-			},
-			"timestamp": {
-			  "type": "string",
-			  "format": "date-time"
-			}
-		  }
-		},
-		"CommercialPlanQuoteRequest": {
-		  "type": "object",
-		  "properties": {
-			"addOnCodes": {
-			  "type": "array",
-			  "items": {
-				"type": "string"
-			  }
-			},
-			"billingPeriod": {
-			  "type": "string",
-			  "enum": [
-				"MONTHLY",
-				"YEARLY"
-			  ]
-			}
-		  }
-		},
-		"CommercialPlanQuoteResponse": {
-		  "type": "object",
-		  "properties": {
-			"plan": {
-			  "type": "object",
-			  "properties": {
-				"code": {
-				  "type": "string"
-				}
-			  }
-			},
-			"addOns": {
-			  "type": "array",
-			  "items": {
-				"type": "object",
-				"properties": {
-				  "code": {
-					"type": "string"
-				  }
-				}
-			  }
-			},
-			"billingPeriod": {
-			  "type": "string"
-			},
-			"lines": {
-			  "type": "array",
-			  "items": {
-				"$ref": "#/components/schemas/CommercialPlanQuoteLine"
-			  }
-			},
-			"total": {
-			  "type": "number"
-			},
-			"currency": {
-			  "type": "string"
-			}
-		  }
-		},
-		"CommercialPlanQuoteLine": {
-		  "type": "object",
-		  "properties": {
-			"serviceCode": {
-			  "type": "string"
-			},
-			"amount": {
-			  "type": "number"
-			},
-			"currency": {
-			  "type": "string"
-			}
-		  }
-		},
-		"ApiResponseCommercialPlanQuoteResponse": {
-		  "type": "object",
-		  "properties": {
-			"success": {
-			  "type": "boolean"
-			},
-			"data": {
-			  "$ref": "#/components/schemas/CommercialPlanQuoteResponse"
-			},
-			"message": {
-			  "type": "string"
-			},
-			"errorCode": {
-			  "type": "string"
-			},
-			"timestamp": {
-			  "type": "string",
-			  "format": "date-time"
-			}
-		  }
-		},
-		"CommercialPlanCheckoutRequest": {
-		  "type": "object",
-		  "properties": {
-			"organizationId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"addOnCodes": {
-			  "type": "array",
-			  "items": {
-				"type": "string"
-			  }
-			},
-			"billingPeriod": {
-			  "type": "string",
-			  "enum": [
-				"MONTHLY",
-				"YEARLY"
-			  ]
-			},
-			"clientId": {
-			  "type": "string"
-			},
-			"provider": {
-			  "type": "string",
-			  "enum": [
-				"MYCOOLPAY",
-				"STRIPE"
-			  ]
-			},
-			"method": {
-			  "type": "string",
-			  "enum": [
-				"MOBILE_MONEY",
-				"CARD"
-			  ]
-			},
-			"payerReference": {
-			  "type": "string"
-			},
-			"idempotencyKey": {
-			  "type": "string"
-			}
-		  }
-		},
-		"CommercialPlanCheckoutResponse": {
-		  "type": "object",
-		  "properties": {
-			"orderId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"paymentOrderId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"status": {
-			  "type": "string",
-			  "enum": [
-				"PENDING_PAYMENT",
-				"ACTIVE",
-				"FAILED",
-				"CANCELLED"
-			  ]
-			},
-			"amount": {
-			  "type": "number"
-			},
-			"currency": {
-			  "type": "string"
-			},
-			"redirectUrl": {
-			  "type": "string"
-			},
-			"providerReference": {
-			  "type": "string"
-			}
-		  }
-		},
-		"ApiResponseCommercialPlanCheckoutResponse": {
-		  "type": "object",
-		  "properties": {
-			"success": {
-			  "type": "boolean"
-			},
-			"data": {
-			  "$ref": "#/components/schemas/CommercialPlanCheckoutResponse"
-			},
-			"message": {
-			  "type": "string"
-			},
-			"errorCode": {
-			  "type": "string"
-			},
-			"timestamp": {
-			  "type": "string",
-			  "format": "date-time"
-			}
-		  }
-		},
-		"CommercialPlanOrderResponse": {
-		  "type": "object",
-		  "properties": {
-			"id": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"organizationId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"planCode": {
-			  "type": "string"
-			},
-			"addOnCodes": {
-			  "type": "array",
-			  "items": {
-				"type": "string"
-			  }
-			},
-			"billingPeriod": {
-			  "type": "string"
-			},
-			"amount": {
-			  "type": "number"
-			},
-			"currency": {
-			  "type": "string"
-			},
-			"paymentOrderId": {
-			  "type": "string",
-			  "format": "uuid"
-			},
-			"status": {
-			  "type": "string",
-			  "enum": [
-				"PENDING_PAYMENT",
-				"ACTIVE",
-				"FAILED",
-				"CANCELLED"
-			  ]
-			}
-		  }
-		},
-		"ApiResponseCommercialPlanOrderResponse": {
-		  "type": "object",
-		  "properties": {
-			"success": {
-			  "type": "boolean"
-			},
-			"data": {
-			  "$ref": "#/components/schemas/CommercialPlanOrderResponse"
-			},
-			"message": {
-			  "type": "string"
-			},
-			"errorCode": {
-			  "type": "string"
-			},
-			"timestamp": {
-			  "type": "string",
-			  "format": "date-time"
-			}
-		  }
-		},
 		"ApiResponseListCommercialPlanOrderResponse": {
 		  "type": "object",
 		  "properties": {
@@ -2286,6 +2843,27 @@
 			  "items": {
 				"$ref": "#/components/schemas/CommercialPlanOrderResponse"
 			  }
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"ApiResponseVoid": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+  
 			},
 			"message": {
 			  "type": "string"

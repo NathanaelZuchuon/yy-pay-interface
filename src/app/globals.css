@@ -1,22 +1,86 @@
 @import "tailwindcss" prefix(yypay);
 
-@theme inline {
-  --color-primary: #1b4df5;
-  --color-secondary: #48546b;
-  --color-white: #ffffff;
-  --color-navy: #0f172a;
-  --color-surface: #f8fafc;
-  --color-border: #e2e8f0;
-  --color-muted: #f1f5f9;
-  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+
+  --app-background: #f8fafc;
+  --app-foreground: #0f172a;
+  --app-card: #ffffff;
+  --app-card-foreground: #0f172a;
+  --app-muted: #f1f5f9;
+  --app-muted-foreground: #64748b;
+  --app-border: #e2e8f0;
+  --app-secondary: #48546b;
+  --app-accent: #eef2ff;
+  --app-accent-foreground: #1b4df5;
+  --app-navy: #0f172a;
+  --app-surface: #f8fafc;
+  --app-shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.06),
+    0 1px 2px -1px rgb(15 23 42 / 0.06);
+  --app-shadow-card-hover: 0 10px 25px -5px rgb(15 23 42 / 0.08),
+    0 4px 10px -6px rgb(15 23 42 / 0.06);
+  --app-shadow-popular: 0 0 0 1px #1b4df5,
+    0 12px 28px -8px rgb(27 77 245 / 0.22);
 }
 
-body {
-  background: var(--yypay-color-surface);
-  color: var(--yypay-color-secondary);
-  font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+.dark {
+  color-scheme: dark;
+
+  --app-background: #0b1120;
+  --app-foreground: #f1f5f9;
+  --app-card: #111827;
+  --app-card-foreground: #f8fafc;
+  --app-muted: #1e293b;
+  --app-muted-foreground: #94a3b8;
+  --app-border: #334155;
+  --app-secondary: #94a3b8;
+  --app-accent: #1e293b;
+  --app-accent-foreground: #93b4ff;
+  --app-navy: #f8fafc;
+  --app-surface: #0f172a;
+  --app-shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.35);
+  --app-shadow-card-hover: 0 10px 25px -5px rgb(0 0 0 / 0.45);
+  --app-shadow-popular: 0 0 0 1px #1b4df5,
+    0 12px 28px -8px rgb(27 77 245 / 0.35);
+}
+
+@theme inline {
+  --color-primary: #1b4df5;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--app-secondary);
+  --color-white: #ffffff;
+  --color-navy: var(--app-navy);
+  --color-surface: var(--app-surface);
+  --color-border: var(--app-border);
+  --color-muted: var(--app-muted);
+  --color-background: var(--app-background);
+  --color-foreground: var(--app-foreground);
+  --color-card: var(--app-card);
+  --color-card-foreground: var(--app-card-foreground);
+  --color-muted-foreground: var(--app-muted-foreground);
+  --color-accent: var(--app-accent);
+  --color-accent-foreground: var(--app-accent-foreground);
+  --color-success: #10b981;
+  --color-popular: #1b4df5;
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--app-shadow-card);
+  --shadow-card-hover: var(--app-shadow-card-hover);
+  --shadow-popular: var(--app-shadow-popular);
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--app-background);
+  color: var(--app-foreground);
+  font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--yypay-color-primary);
+  outline-offset: 2px;
 }

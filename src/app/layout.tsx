@@ -22,11 +22,11 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
+      suppressHydrationWarning
       className={`${plusJakartaSans.variable} yypay:h-full yypay:antialiased`}
     >
-      <body className="yypay:min-h-full yypay:flex yypay:flex-col yypay:font-sans">
-        <Providers />
-        {children}
+      <body className="yypay:min-h-full yypay:flex yypay:flex-col yypay:bg-background yypay:font-sans yypay:text-foreground">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

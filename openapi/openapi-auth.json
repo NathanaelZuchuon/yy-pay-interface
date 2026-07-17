@@ -975,6 +975,26 @@
 			}
 		  }
 		}
+	  },
+	  "/api/auth/me/memberships": {
+		"get": {
+		  "tags": [
+			"auth-controller"
+		  ],
+		  "operationId": "myMemberships",
+		  "responses": {
+			"200": {
+			  "description": "OK",
+			  "content": {
+				"*/*": {
+				  "schema": {
+					"$ref": "#/components/schemas/ApiResponseListUserMembershipResponse"
+				  }
+				}
+			  }
+			}
+		  }
+		}
 	  }
 	},
 	"components": {
@@ -1436,12 +1456,23 @@
 			"sessionToken": {
 			  "type": "string"
 			},
+			"refreshToken": {
+			  "type": "string"
+			},
 			"tokenType": {
 			  "type": "string"
 			},
 			"expiresInSeconds": {
 			  "type": "integer",
 			  "format": "int64"
+			},
+			"refreshExpiresInSeconds": {
+			  "type": "integer",
+			  "format": "int64"
+			},
+			"refreshExpiresAt": {
+			  "type": "string",
+			  "format": "date-time"
 			},
 			"sharedSession": {
 			  "$ref": "#/components/schemas/SharedSsoSessionResponse"
@@ -2254,6 +2285,64 @@
 			"expiresInSeconds": {
 			  "type": "integer",
 			  "format": "int64"
+			}
+		  }
+		},
+		"ApiResponseListUserMembershipResponse": {
+		  "type": "object",
+		  "properties": {
+			"success": {
+			  "type": "boolean"
+			},
+			"data": {
+			  "type": "array",
+			  "items": {
+				"$ref": "#/components/schemas/UserMembershipResponse"
+			  }
+			},
+			"message": {
+			  "type": "string"
+			},
+			"errorCode": {
+			  "type": "string"
+			},
+			"timestamp": {
+			  "type": "string",
+			  "format": "date-time"
+			}
+		  }
+		},
+		"UserMembershipResponse": {
+		  "type": "object",
+		  "properties": {
+			"tenantId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"organizationId": {
+			  "type": "string",
+			  "format": "uuid"
+			},
+			"organizationCode": {
+			  "type": "string"
+			},
+			"organizationName": {
+			  "type": "string"
+			},
+			"roleCode": {
+			  "type": "string"
+			},
+			"roleName": {
+			  "type": "string"
+			},
+			"scopeType": {
+			  "type": "string"
+			},
+			"permissions": {
+			  "type": "array",
+			  "items": {
+				"type": "string"
+			  }
 			}
 		  }
 		}

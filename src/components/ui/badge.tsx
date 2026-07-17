@@ -7,9 +7,10 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "yypay:bg-primary/10 yypay:text-primary",
-        secondary: "yypay:bg-muted yypay:text-secondary",
-        success: "yypay:bg-emerald-100 yypay:text-emerald-700",
+        default: "yypay:bg-accent yypay:text-accent-foreground",
+        secondary: "yypay:bg-muted yypay:text-muted-foreground",
+        success:
+          "yypay:bg-emerald-500/15 yypay:text-emerald-700 dark:yypay:text-emerald-300",
       },
     },
     defaultVariants: {
