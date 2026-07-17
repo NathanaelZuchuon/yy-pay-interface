@@ -10,7 +10,7 @@ export async function POST(
 ) {
   const { code } = await params;
   const body = await readJsonBody<PurchaseRequest>(request);
-  const client = createIwmPaymentClient();
+  const client = createIwmPaymentClient(request);
   const result = await client.POST("/api/plans/{code}/purchase", {
     params: { path: { code } },
     body,

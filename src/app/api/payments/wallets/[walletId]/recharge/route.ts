@@ -10,7 +10,7 @@ export async function POST(
 ) {
   const { walletId } = await params;
   const body = await readJsonBody<TransactionRequest>(request);
-  const client = createIwmPaymentClient();
+  const client = createIwmPaymentClient(request);
   const result = await client.POST("/api/payments/wallets/{walletId}/recharge", {
     params: { path: { walletId } },
     body: body ?? {},

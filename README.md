@@ -1,8 +1,8 @@
-# yy-pay
+# YowYob Payment (yy-pay)
 
-BFF (Backend For Frontend) Next.js pour l'API IWM — authentification, paiements, portefeuilles et abonnements.
+BFF Next.js pour l'API IWM - authentification, paiements, portefeuilles et abonnements, avec parcours métier complet **YowYob Payment**.
 
-Les types TypeScript sont générés depuis les specs OpenAPI. Aucun schéma n'est défini en dur dans le code applicatif.
+Les types TypeScript sont générés depuis les specs OpenAPI. Aucun schéma métier n'est défini en dur dans le code applicatif.
 
 ## Prérequis
 
@@ -17,13 +17,29 @@ Les types TypeScript sont générés depuis les specs OpenAPI. Aucun schéma n'e
 cp .env.example .env.local
 ```
 
-2. Renseigner les variables dans `.env.local` :
+1. Renseigner les variables dans `.env.local` :
 
 | Variable | Description |
 |----------|-------------|
-| `IWM_API_BASE_URL` | URL de base de l'API IWM (ex. `https://kernel-core.yowyob.com/kernel-api`) |
+| `IWM_API_BASE_URL` | URL de base de l'API IWM |
 | `IWM_CLIENT_ID` | Identifiant client (`X-Client-Id`) |
 | `IWM_API_KEY` | Clé API (`X-Api-Key`) |
+| `COOKIE_ACCESS_TOKEN` | Nom du cookie httpOnly JWT (défaut : `yy_pay_access_token`) |
+| `COOKIE_REFRESH_TOKEN` | Nom du cookie refresh token |
+| `COOKIE_ORGANIZATION_ID` | Nom du cookie organisation active |
+| `COOKIE_WALLET_ID` | Nom du cookie wallet actif |
+| `COOKIE_ACTOR_ID` | Nom du cookie actor utilisateur |
+| `PAYMENT_CALLBACK_URL` | URL de retour après paiement MYCOOLPAY (ex. `http://localhost:3000/console?payment=success`) |
+
+## Parcours utilisateur
+
+1. **Landing** (`/`) - présentation, ancres Documentation / Tarifs
+2. **Login** (`/login`) - identifiants → MFA email → cookie httpOnly posé par le BFF
+3. **Organisations** (`/organizations`) - `discover-contexts` puis `select-context`, cookie `organizationId`
+4. **Console** (`/console`) - wallet, transactions, plans, panier
+5. **Paiement** - via wallet (`purchase` par plan) ou MYCOOLPAY (`initiate` + redirection)
+
+Le mot de passe n'est **jamais** stocké en cookie : il reste en mémoire (Zustand) uniquement pendant la sélection d'organisation.
 
 ## Commandes
 
@@ -31,11 +47,7 @@ cp .env.example .env.local
 # Générer les types payment + auth
 npm run generate:api
 
-# Générer uniquement payment ou auth
-npm run generate:api:payment
-npm run generate:api:auth
-
-# Build + démarrage (comportement actuel du script dev)
+# Build + démarrage
 npm run dev
 
 # Build de production (régénère les types via prebuild)
@@ -48,16 +60,21 @@ npm start
 npm run lint
 ```
 
-## Authentification BFF
+## Authentification & session
 
-Le client auth (`iwm-auth-client`) transmet automatiquement :
+- Le BFF pose des cookies **httpOnly** (`secure` en production, `sameSite: lax`)
+- Le client front utilise `bff-client.ts` avec `credentials: "include"` - **aucun** header `Authorization` manuel
+- `iwm-auth-client` lit le token depuis les cookies côté route handler
+- Routes utilitaires : `GET /api/session/me`, `GET /api/session/context`
 
-- `X-Client-Id` et `X-Api-Key` depuis les variables d'environnement
-- le header `Authorization` (Bearer JWT) si le client front l'envoie
+### Proxy (protection des routes)
 
-Les routes protégées (`/api/users/me`, `change-password`, `logout`, etc.) nécessitent un JWT valide côté client.
+- Public : `/`, `/login`, `/api/*`
+- Protégé : `/organizations`, `/console`
+- Sans token → `/login`
+- Sans `organizationId` → `/organizations`
 
-## Endpoints BFF — payment
+## Endpoints BFF - payment
 
 | Méthode | Route | Opération |
 |---------|-------|-----------|
@@ -79,77 +96,62 @@ Les routes protégées (`/api/users/me`, `change-password`, `logout`, etc.) néc
 | GET | `/api/payments/orders/{id}` | get |
 | POST | `/api/payments/orders/{id}/refresh` | refresh |
 
-**Non exposé (payment) :** `POST /api/payments/orders/callbacks/{provider}` — webhooks Stripe/MYCOOLPAY → backend IWM direct.
+**Non exposé :** `POST /api/payments/orders/callbacks/{provider}` - webhooks → backend IWM direct.
 
-## Endpoints BFF — auth
+## Endpoints BFF - auth (sélection)
 
-| Méthode | Route | Opération |
-|---------|-------|-----------|
-| GET | `/api/users/me` | getMe |
-| PUT | `/api/users/me/plan` | updateMyPlan |
-| PUT | `/api/users/me/onboarding` | updateOnboarding |
-| PUT | `/api/users/me/identity-onboarding` | updateIdentityOnboarding |
-| PUT | `/api/users/me/avatar` | updateMyAvatar |
-| POST | `/api/auth/sign-up` | signUp |
-| POST | `/api/auth/select-context` | selectContext |
-| POST | `/api/auth/reset-password` | resetPassword |
-| POST | `/api/auth/register` | register |
-| POST | `/api/auth/refresh` | refresh |
-| POST | `/api/auth/phone-verification/request` | requestPhoneVerification |
-| POST | `/api/auth/phone-verification/confirm` | confirmPhoneVerification |
-| POST | `/api/auth/password-reset/issue` | issuePasswordReset |
-| POST | `/api/auth/otp` | issueOtp |
-| POST | `/api/auth/otp/verify` | verifyOtp |
-| POST | `/api/auth/mfa/enable` | enableMfa |
-| POST | `/api/auth/mfa/disable` | disableMfa |
-| POST | `/api/auth/mfa/confirm` | confirmMfa |
-| POST | `/api/auth/me/spaces` | createOwnedSpace |
-| POST | `/api/auth/logout` | logout |
-| POST | `/api/auth/login` | login |
-| POST | `/api/auth/login/mfa/confirm` | confirmLoginMfa |
-| POST | `/api/auth/identify` | identify |
-| POST | `/api/auth/forgot-password` | forgotPassword |
-| POST | `/api/auth/email-verification/resend` | resendEmailVerification |
-| POST | `/api/auth/email-verification/request` | requestEmailVerification |
-| POST | `/api/auth/email-verification/confirm` | confirmEmailVerification |
-| POST | `/api/auth/discover-sign-up-contexts` | discoverSignUpContexts |
-| POST | `/api/auth/discover-contexts` | discoverContexts |
-| POST | `/api/auth/change-password` | changePassword |
-| POST | `/api/auth/captcha` | issueCaptcha |
-| POST | `/api/auth/captcha/verify` | verifyCaptcha |
-| POST | `/api/auth/users/{userId}/reset-password` | adminResetPassword |
+| Méthode | Route | Comportement BFF |
+|---------|-------|------------------|
+| POST | `/api/auth/login` | Proxy → retourne `mfaToken` |
+| POST | `/api/auth/login/mfa/confirm` | Proxy → **Set-Cookie** access token |
+| POST | `/api/auth/discover-contexts` | Proxy standard |
+| POST | `/api/auth/select-context` | Proxy → **Set-Cookie** `organizationId` |
+| POST | `/api/auth/logout` | Proxy → **clear** cookies session |
+| GET | `/api/users/me` | Proxy avec cookie auth |
 
-## Mise à jour OpenAPI
+## Structure des pages
 
-1. Remplacer [`openapi/openapi-payment.json`](openapi/openapi-payment.json) et/ou [`openapi/openapi-auth.json`](openapi/openapi-auth.json)
-2. Exécuter `npm run generate:api` (ou le script ciblé)
-3. Vérifier que les routes BFF couvrent les nouvelles opérations
-4. Committer `src/types/schemas-payment.d.ts` et `src/types/schemas-auth.d.ts`
+```
+src/app/
+  (public)/
+    page.tsx              # Landing YowYob Payment
+    login/page.tsx        # Wizard auth MFA
+  (protected)/
+    layout.tsx            # Layout protégé
+    organizations/page.tsx
+    console/page.tsx
+src/components/
+  layout/                 # SiteHeader, ConsoleHeader
+  auth/                   # Formulaires login (inline dans pages)
+  console/                # WalletCard, TransactionList, PlansGrid
+  cart/                   # CartSheet
+  ui/                     # Composants shadcn-style
+src/stores/
+  cart-store.ts           # Panier Zustand (plans)
+  auth-wizard-store.ts    # Credentials temporaires org picker
+src/lib/
+  session-cookies.ts      # Gestion cookies httpOnly
+  bff-client.ts           # fetch BFF credentials include
+```
 
 ## Design system
 
 | Token | Valeur | Usage |
 |-------|--------|-------|
-| `primary` | `#1b4df5` | Accent, titres |
+| `primary` | `#1b4df5` | CTA, boutons |
 | `secondary` | `#48546b` | Texte secondaire |
-| `white` | `#ffffff` | Fond |
+| `white` | `#ffffff` | Fond cartes |
+| `navy` | `#0f172a` | Titres, onglets actifs |
+| `surface` | `#f8fafc` | Fond page |
 
-- **Police :** Plus Jakarta Sans (via `next/font/google`)
-- **Tailwind v4 :** préfixe obligatoire `yypay:` sur toutes les classes utilitaires (ex. `yypay:flex`, `yypay:text-primary`). Tailwind n'autorise que des lettres `a-z` dans le nom de préfixe — `yy-pay` n'est donc pas supporté nativement.
+- **Police :** Plus Jakarta Sans
+- **Icônes :** lucide-react
+- **UI :** composants shadcn-style (Radix + CVA)
+- **Tailwind v4 :** préfixe `yypay:` sur toutes les classes utilitaires
 
-## Structure
+## Mise à jour OpenAPI
 
-```
-openapi/
-  openapi-payment.json        # Spec payment
-  openapi-auth.json           # Spec auth
-src/types/
-  schemas-payment.d.ts        # Types payment générés
-  schemas-auth.d.ts           # Types auth générés
-src/lib/
-  env.ts                      # Variables d'environnement
-  iwm-payment-client.ts       # Client openapi-fetch payment
-  iwm-auth-client.ts          # Client openapi-fetch auth (+ Bearer)
-  bff-utils.ts                # Helpers de réponse BFF
-src/app/api/                  # Route handlers proxy
-```
+1. Remplacer `openapi/openapi-payment.json` et/ou `openapi/openapi-auth.json`
+2. Exécuter `npm run generate:api`
+3. Vérifier les routes BFF
+4. Committer les fichiers `src/types/schemas-*.d.ts`

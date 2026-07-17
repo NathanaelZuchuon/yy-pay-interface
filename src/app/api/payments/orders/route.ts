@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const limitParam = searchParams.get("limit");
   const limit = limitParam ? Number(limitParam) : undefined;
 
-  const client = createIwmPaymentClient();
+  const client = createIwmPaymentClient(request);
   const result = await client.GET("/api/payments/orders", {
     params: {
       query: limit !== undefined && !Number.isNaN(limit) ? { limit } : undefined,
@@ -20,9 +20,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await readJsonBody<InitiatePaymentRequest>(request);
-  const client = createIwmPaymentClient();
+  const client = createIwmPaymentClient(request);
   const result = await client.POST("/api/payments/orders", {
-    body: body ?? {},
+    body: {
+      ...(body ?? {}),
+      callbackUrl:
+        body?.callbackUrl ??
+        process.env.PAYMENT_CALLBACK_URL ??
+        undefined,
+    },
   });
   return toBffResponse(result);
 }

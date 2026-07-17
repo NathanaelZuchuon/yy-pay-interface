@@ -24,7 +24,7 @@ export async function GET(
     });
   }
 
-  const client = createIwmPaymentClient();
+  const client = createIwmPaymentClient(request);
   const result = await client.GET("/api/payments/wallets/{walletId}/can-operate", {
     params: {
       path: { walletId },

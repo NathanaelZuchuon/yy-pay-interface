@@ -1,9 +1,14 @@
-import type { components } from "@/types/schemas-auth";
+import { asJsonBody, readJsonBody } from "@/lib/bff-utils";
 import { createIwmAuthClient } from "@/lib/iwm-auth-client";
-import { readJsonBody, asJsonBody, toBffResponse } from "@/lib/bff-utils";
+import { applySessionCookies } from "@/lib/session-cookies";
+import type { components } from "@/types/schemas-auth";
+import { NextResponse } from "next/server";
 
 type SelectLoginContextRequest =
   components["schemas"]["SelectLoginContextRequest"];
+type ApiResponseContextualLoginResponse =
+  components["schemas"]["ApiResponseContextualLoginResponse"];
+type LoginResponse = components["schemas"]["LoginResponse"];
 
 export async function POST(request: Request) {
   const body = await readJsonBody<SelectLoginContextRequest>(request);
@@ -11,5 +16,22 @@ export async function POST(request: Request) {
   const result = await client.POST("/api/auth/select-context", {
     body: asJsonBody(body),
   });
-  return toBffResponse(result);
+
+  const payload = (result.data ?? result.error) as
+    | ApiResponseContextualLoginResponse
+    | undefined;
+  const response = NextResponse.json(payload ?? null, {
+    status: result.response.status,
+  });
+
+  const contextual = payload?.data;
+  const session = contextual?.session as LoginResponse | undefined;
+
+  applySessionCookies(response, {
+    accessToken: session?.accessToken,
+    actorId: session?.actorId,
+    organizationId: contextual?.selectedOrganizationId,
+  });
+
+  return response;
 }
