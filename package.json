@@ -1,0 +1,33 @@
+{
+  "name": "yy-pay",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next build && next start",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "generate:api:payment": "openapi-typescript ./openapi/openapi-payment.json -o ./src/types/schemas-payment.d.ts",
+    "generate:api:auth": "openapi-typescript ./openapi/openapi-auth.json -o ./src/types/schemas-auth.d.ts",
+    "generate:api": "npm run generate:api:payment && npm run generate:api:auth",
+    "prebuild": "npm run generate:api"
+  },
+  "dependencies": {
+    "next": "16.2.10",
+    "openapi-fetch": "^0.14.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "openapi-typescript": "^7.8.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,14 @@
+@import "tailwindcss" prefix(yypay);
+
+@theme inline {
+  --color-primary: #1b4df5;
+  --color-secondary: #48546b;
+  --color-white: #ffffff;
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--yypay-color-white);
+  color: var(--yypay-color-secondary);
+  font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
