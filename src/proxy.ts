@@ -1,11 +1,11 @@
 import {
-    getAccessTokenCookieName,
-    getOrganizationIdCookieName,
+  getAccessTokenCookieName,
+  getOrganizationIdCookieName,
 } from "@/lib/session-cookies";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const PUBLIC_PATHS = ["/", "/login"];
+const PUBLIC_PATHS = ["/", "/login", "/direct-payment"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -16,6 +16,7 @@ export function proxy(request: NextRequest) {
 
   const isPublic =
     PUBLIC_PATHS.includes(pathname) ||
+    pathname.startsWith("/direct-payment") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next");
 

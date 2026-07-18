@@ -16,8 +16,8 @@ import { bffPostEnvelope } from "@/lib/bff-client";
 import { useAuthWizardStore } from "@/stores/auth-wizard-store";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 type LoginChallengeData = {
@@ -26,7 +26,23 @@ type LoginChallengeData = {
 };
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="yypay:flex yypay:min-h-full yypay:items-center yypay:justify-center yypay:bg-background">
+          <Loader2 className="yypay:h-8 yypay:w-8 yypay:animate-spin yypay:text-primary" />
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const { setCredentials, setMfaToken, mfaToken, email, password } =
     useAuthWizardStore();
   const [step, setStep] = useState<"credentials" | "mfa">("credentials");
@@ -70,7 +86,11 @@ export default function LoginPage() {
         code,
       });
       toast.success("Authentification réussie");
-      router.push("/organizations");
+      if (returnTo?.startsWith("/")) {
+        router.push(returnTo);
+      } else {
+        router.push("/organizations");
+      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Code MFA invalide",
