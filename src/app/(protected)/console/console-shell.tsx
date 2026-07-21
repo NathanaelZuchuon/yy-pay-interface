@@ -1,9 +1,15 @@
 "use client";
 
-import { PlansGrid } from "@/components/console/plans-grid";
-import { TransactionList } from "@/components/console/transaction-list";
-import { WalletCard } from "@/components/console/wallet-card";
+import {
+  ConsoleDataProvider,
+  useConsoleData,
+} from "@/components/console/console-data-provider";
 import { ConsoleHeader } from "@/components/layout/console-header";
+import { ConsoleSidebar } from "@/components/layout/console-sidebar";
+import {
+  OnboardingProvider,
+  useOnboarding,
+} from "@/components/onboarding/onboarding-tour";
 import { bffPost } from "@/lib/bff-client";
 import {
   BUNDLE_ORDER_STORAGE_KEY,
@@ -12,17 +18,22 @@ import {
 } from "@/lib/bundle-constants";
 import { parsePaymentReturn } from "@/lib/payment-callback";
 import type { components } from "@/types/schemas-payment";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
 import { toast } from "sonner";
 
-type WalletResponse = components["schemas"]["WalletResponse"];
 type CommercialPlanOrderResponse =
   components["schemas"]["CommercialPlanOrderResponse"];
 type ServiceBundleOrderResponse =
   components["schemas"]["ServiceBundleOrderResponse"];
 type WalletRechargeResponse =
   components["schemas"]["WalletRechargeResponse"];
+
+const PAGE_TITLES: Record<string, string> = {
+  "/console": "Vue d'ensemble",
+  "/console/transactions": "Transactions",
+  "/console/plans": "Plans disponibles",
+};
 
 function isFailureStatus(status?: string): boolean {
   const normalized = status?.trim().toUpperCase();
@@ -33,16 +44,11 @@ function isFailureStatus(status?: string): boolean {
   );
 }
 
-export default function ConsolePageClient() {
+function PaymentReturnHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paymentReturn = parsePaymentReturn(searchParams.get("payment"));
-  const [wallet, setWallet] = useState<WalletResponse | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleRefresh = useCallback(() => {
-    setRefreshKey((key) => key + 1);
-  }, []);
+  const { bumpRefresh } = useConsoleData();
 
   useEffect(() => {
     const commercialPlanOrderId = sessionStorage.getItem(
@@ -82,7 +88,7 @@ export default function ConsolePageClient() {
         toast.error("Le paiement a échoué.");
       }
 
-      handleRefresh();
+      bumpRefresh();
     }
 
     async function refreshPendingOrders() {
@@ -114,7 +120,7 @@ export default function ConsolePageClient() {
             toast.success("Paiement reçu. Traitement de la recharge en cours…");
           }
 
-          handleRefresh();
+          bumpRefresh();
         } catch (error) {
           if (!cancelled) {
             toast.error(
@@ -189,7 +195,7 @@ export default function ConsolePageClient() {
           }
         }
 
-        handleRefresh();
+        bumpRefresh();
       } catch (error) {
         if (!cancelled) {
           toast.error(
@@ -210,49 +216,44 @@ export default function ConsolePageClient() {
     return () => {
       cancelled = true;
     };
-  }, [paymentReturn, handleRefresh, router]);
+  }, [paymentReturn, bumpRefresh, router]);
 
-  const dataKey = `${refreshKey}-${paymentReturn ?? "idle"}`;
+  return null;
+}
+
+function ConsoleChrome({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const { wallet, bumpRefresh } = useConsoleData();
+  const { restart } = useOnboarding();
+  const title = PAGE_TITLES[pathname] ?? "Console";
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
+      <PaymentReturnHandler />
       <ConsoleHeader
-        title="Console"
+        title={title}
         walletName={wallet?.ownerName}
-        onCheckoutComplete={handleRefresh}
+        onCheckoutComplete={bumpRefresh}
+        sidebar={<ConsoleSidebar />}
+        onOpenHelp={restart}
       />
-      <main className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:px-4 yypay:py-8 sm:yypay:px-6">
-        <div className="yypay:mb-8">
-          <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
-            Tableau de bord
-          </h1>
-          <p className="yypay:mt-2 yypay:text-muted-foreground">
-            Gérez votre wallet, consultez vos transactions et souscrivez à des plans.
-          </p>
-        </div>
+      <div className="yypay:mx-auto yypay:flex yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:items-start yypay:gap-6 yypay:px-4 yypay:py-8 sm:yypay:px-6">
+        <aside className="yypay:sticky yypay:top-24 yypay:hidden yypay:w-56 yypay:shrink-0 lg:yypay:block">
+          <ConsoleSidebar />
+        </aside>
 
-        <div
-          key={dataKey}
-          className="yypay:grid yypay:grid-cols-1 yypay:gap-6 lg:yypay:grid-cols-3"
-        >
-          <div className="yypay:lg:col-span-1">
-            <WalletCard onWalletChange={setWallet} />
-          </div>
-          <div className="yypay:lg:col-span-2">
-            <TransactionList
-              walletId={wallet?.id}
-              walletName={wallet?.ownerName}
-            />
-          </div>
-        </div>
-
-        <section className="yypay:mt-10">
-          <h2 className="yypay:mb-4 yypay:text-xl yypay:font-semibold yypay:text-foreground">
-            Plans disponibles
-          </h2>
-          <PlansGrid key={`plans-${dataKey}`} refreshKey={refreshKey} />
-        </section>
-      </main>
+        <main className="yypay:min-w-0 yypay:flex-1">{children}</main>
+      </div>
     </div>
+  );
+}
+
+export function ConsoleShell({ children }: { children: ReactNode }) {
+  return (
+    <ConsoleDataProvider>
+      <OnboardingProvider>
+        <ConsoleChrome>{children}</ConsoleChrome>
+      </OnboardingProvider>
+    </ConsoleDataProvider>
   );
 }

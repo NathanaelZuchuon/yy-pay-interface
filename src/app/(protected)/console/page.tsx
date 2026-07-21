@@ -1,10 +1,21 @@
-import { Suspense } from "react";
-import ConsolePageClient from "./console-page-client";
+"use client";
 
-export default function ConsolePage() {
+import { WalletCard } from "@/components/console/wallet-card";
+
+export default function ConsoleOverviewPage() {
   return (
-    <Suspense fallback={null}>
-      <ConsolePageClient />
-    </Suspense>
+    <>
+      <div className="yypay:mb-8">
+        <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
+          Tableau de bord
+        </h1>
+        <p className="yypay:mt-2 yypay:text-muted-foreground">
+          Gérez votre wallet et consultez son solde.
+        </p>
+      </div>
+      <div className="yypay:max-w-xl">
+        <WalletCard />
+      </div>
+    </>
   );
 }

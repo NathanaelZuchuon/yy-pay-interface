@@ -20,38 +20,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { bffGet, bffPost } from "@/lib/bff-client";
+import { useConsoleData } from "@/components/console/console-data-provider";
+import { bffPost } from "@/lib/bff-client";
 import { RECHARGE_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
 import { formatMycoolpayLabel } from "@/lib/wallet-labels";
-import type { components } from "@/types/schemas-auth";
 import type { components as PaymentComponents } from "@/types/schemas-payment";
 import { Loader2, Plus, Wallet } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
-type UserAccountResponse = components["schemas"]["UserAccountResponse"];
 type WalletResponse = PaymentComponents["schemas"]["WalletResponse"];
 type WalletRechargeResponse =
   PaymentComponents["schemas"]["WalletRechargeResponse"];
-type SessionContext = {
-  organizationId: string | null;
-  actorId: string | null;
-  walletId: string | null;
-};
-
-type WalletCardProps = {
-  onWalletChange?: (wallet: WalletResponse | null) => void;
-};
 
 function createRechargeIdempotencyKey(walletId: string) {
   return `wallet-${walletId}-recharge-${crypto.randomUUID()}`;
 }
 
-export function WalletCard({ onWalletChange }: WalletCardProps) {
-  const [user, setUser] = useState<UserAccountResponse | null>(null);
-  const [wallet, setWallet] = useState<WalletResponse | null>(null);
-  const [context, setContext] = useState<SessionContext | null>(null);
-  const [loading, setLoading] = useState(true);
+export function WalletCard() {
+  const { user, sessionContext, wallet, walletLoading, setWallet } =
+    useConsoleData();
+  const loading = walletLoading;
   const [creating, setCreating] = useState(false);
   const [recharging, setRecharging] = useState(false);
   const [walletName, setWalletName] = useState("");
@@ -59,49 +48,8 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false);
 
-  const loadWallet = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [me, sessionContext] = await Promise.all([
-        bffGet<UserAccountResponse>("/api/session/me"),
-        bffGet<SessionContext>("/api/session/context"),
-      ]);
-      setUser(me);
-      setContext(sessionContext);
-      const actorId = sessionContext.actorId ?? me.actorId;
-      if (!actorId) {
-        setWallet(null);
-        onWalletChange?.(null);
-        return;
-      }
-      try {
-        const walletData = await bffGet<WalletResponse>(
-          `/api/payments/wallets/owner/${actorId}`,
-        );
-        setWallet(walletData);
-        onWalletChange?.(walletData);
-      } catch {
-        setWallet(null);
-        onWalletChange?.(null);
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Impossible de charger le wallet",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [onWalletChange]);
-
-  useEffect(() => {
-    const timer = globalThis.setTimeout(() => {
-      void loadWallet();
-    }, 0);
-    return () => globalThis.clearTimeout(timer);
-  }, [loadWallet]);
-
   async function handleCreateWallet() {
-    const actorId = context?.actorId ?? user?.actorId;
+    const actorId = sessionContext?.actorId ?? user?.actorId;
     const trimmedName = walletName.trim();
     if (!actorId) return;
     if (!trimmedName) {
@@ -116,7 +64,6 @@ export function WalletCard({ onWalletChange }: WalletCardProps) {
         ownerName: trimmedName,
       });
       setWallet(created);
-      onWalletChange?.(created);
       setCreateDialogOpen(false);
       setWalletName("");
       toast.success("Wallet créé avec succès");

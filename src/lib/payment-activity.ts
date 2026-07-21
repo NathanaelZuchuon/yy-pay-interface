@@ -50,20 +50,55 @@ const FAILED_STATUSES = new Set([
   "EXPIRED",
 ]);
 
-export function getActivityStatusVariant(
-  status?: string,
-): "success" | "secondary" | "default" {
+export type ActivityStatusGroup = "success" | "pending" | "failed" | "other";
+
+export function getActivityStatusGroup(status?: string): ActivityStatusGroup {
   const normalized = status?.trim().toUpperCase() ?? "";
   if (SUCCESS_STATUSES.has(normalized)) {
     return "success";
   }
   if (PENDING_STATUSES.has(normalized)) {
-    return "secondary";
+    return "pending";
   }
   if (FAILED_STATUSES.has(normalized)) {
-    return "default";
+    return "failed";
   }
-  return "secondary";
+  return "other";
+}
+
+export function getActivityStatusVariant(
+  status?: string,
+): "success" | "secondary" | "destructive" {
+  switch (getActivityStatusGroup(status)) {
+    case "success":
+      return "success";
+    case "failed":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  SUCCESS: "Réussi",
+  SUCCESSFUL: "Réussi",
+  COMPLETED: "Réussi",
+  PAID: "Réussi",
+  ACTIVE: "Actif",
+  RECHARGED: "Rechargé",
+  PENDING: "En attente",
+  PENDING_PAYMENT: "En attente",
+  PROCESSING: "En cours",
+  FAILED: "Échoué",
+  CANCELLED: "Annulé",
+  CANCELED: "Annulé",
+  REJECTED: "Rejeté",
+  EXPIRED: "Expiré",
+};
+
+export function formatActivityStatusLabel(status?: string): string {
+  const normalized = status?.trim().toUpperCase() ?? "";
+  return STATUS_LABELS[normalized] ?? status ?? "Inconnu";
 }
 
 export function formatActivityType(item: PaymentActivityItem): string {

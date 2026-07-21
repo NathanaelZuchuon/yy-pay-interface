@@ -60,6 +60,8 @@ function SheetContent({
             "yypay:inset-y-0 yypay:right-0 yypay:h-full yypay:w-full yypay:max-w-md yypay:border-l yypay:border-border sm:yypay:max-w-lg",
           side === "bottom" &&
             "yypay:inset-x-0 yypay:bottom-0 yypay:h-auto yypay:max-h-[85vh] yypay:rounded-t-xl yypay:border-t yypay:border-border md:yypay:hidden",
+          side === "left" &&
+            "yypay:inset-y-0 yypay:left-0 yypay:h-full yypay:w-full yypay:max-w-xs yypay:border-r yypay:border-border sm:yypay:max-w-sm",
           className,
         )}
         {...props}
