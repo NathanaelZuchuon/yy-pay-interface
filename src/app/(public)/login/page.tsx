@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocale } from "@/i18n/locale-provider";
 import {
     organizationsPath as buildOrganizationsPath,
     tenantsPath as buildTenantsPath,
@@ -45,6 +46,7 @@ export default function LoginPage() {
 
 function LoginPageContent() {
   const router = useRouter();
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
   const stepParam = searchParams.get("step");
@@ -81,18 +83,16 @@ function LoginPageContent() {
       );
       const data = result.data;
       if (!data?.selectionToken) {
-        throw new Error("Identifiants invalides ou aucun tenant disponible");
+        throw new Error(t.login.invalidCredentials);
       }
 
       setCredentials(principal, secret);
       setSelectionToken(data.selectionToken);
       setDiscoverData(data);
-      toast.success("Identifiants validés — choisissez votre tenant");
+      toast.success(t.login.credentialsValidated);
       hardNavigate(tenantsPath());
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Échec de la connexion",
-      );
+      toast.error(error instanceof Error ? error.message : t.login.loginFailed);
     } finally {
       setLoading(false);
     }
@@ -106,12 +106,10 @@ function LoginPageContent() {
         mfaToken: mfaToken || useAuthWizardStore.getState().mfaToken,
         code,
       });
-      toast.success("Authentification réussie");
+      toast.success(t.login.authSuccess);
       hardNavigate(organizationsPath());
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Code MFA invalide",
-      );
+      toast.error(error instanceof Error ? error.message : t.login.invalidMfaCode);
     } finally {
       setLoading(false);
     }
@@ -125,26 +123,26 @@ function LoginPageContent() {
           <CardHeader className="yypay:pb-2">
             <Tabs value="login">
               <TabsList className="yypay:grid yypay:w-full yypay:grid-cols-2">
-                <TabsTrigger value="login">Se connecter</TabsTrigger>
+                <TabsTrigger value="login">{t.login.tabLogin}</TabsTrigger>
                 <TabsTrigger value="signup" disabled>
-                  Créer un compte
+                  {t.login.tabSignup}
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="login" className="yypay:mt-6">
                 {step === "credentials" ? (
                   <>
-                    <CardTitle className="yypay:text-2xl">Bon retour.</CardTitle>
+                    <CardTitle className="yypay:text-2xl">{t.login.welcomeBackTitle}</CardTitle>
                     <CardDescription>
-                      Connectez-vous pour accéder à votre console.
+                      {t.login.welcomeBackDescription}
                     </CardDescription>
                   </>
                 ) : (
                   <>
                     <CardTitle className="yypay:text-2xl">
-                      Vérification MFA
+                      {t.login.mfaTitle}
                     </CardTitle>
                     <CardDescription>
-                      Saisissez le code reçu par email.
+                      {t.login.mfaDescription}
                     </CardDescription>
                   </>
                 )}
@@ -155,23 +153,23 @@ function LoginPageContent() {
             {step === "credentials" ? (
               <form onSubmit={handleLogin} className="yypay:space-y-4">
                 <div className="yypay:space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
+                  <Label htmlFor="email">{t.login.emailLabel}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="exemple : vous@domaine.com"
+                    placeholder={t.login.emailPlaceholder}
                     value={principal}
                     onChange={(e) => setPrincipal(e.target.value)}
                     required
                   />
                 </div>
                 <div className="yypay:space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password">{t.login.passwordLabel}</Label>
                   <div className="yypay:relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Entrez votre mot de passe"
+                      placeholder={t.login.passwordPlaceholder}
                       value={secret}
                       onChange={(e) => setSecret(e.target.value)}
                       required
@@ -183,8 +181,8 @@ function LoginPageContent() {
                       className="yypay:absolute yypay:right-3 yypay:top-1/2 yypay:-translate-y-1/2 yypay:text-secondary"
                       aria-label={
                         showPassword
-                          ? "Masquer le mot de passe"
-                          : "Afficher le mot de passe"
+                          ? t.login.hidePassword
+                          : t.login.showPassword
                       }
                     >
                       {showPassword ? (
@@ -199,13 +197,13 @@ function LoginPageContent() {
                   {loading && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Continuer
+                  {t.login.continueCta}
                 </Button>
               </form>
             ) : (
               <form onSubmit={handleMfa} className="yypay:space-y-4">
                 <div className="yypay:space-y-2">
-                  <Label htmlFor="mfa">Code MFA</Label>
+                  <Label htmlFor="mfa">{t.login.mfaCodeLabel}</Label>
                   <Input
                     id="mfa"
                     inputMode="numeric"
@@ -220,7 +218,7 @@ function LoginPageContent() {
                   {loading && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Vérifier le code
+                  {t.login.verifyCodeCta}
                 </Button>
                 <Button
                   type="button"
@@ -228,17 +226,16 @@ function LoginPageContent() {
                   className="yypay:w-full"
                   onClick={() => router.push(tenantsPath())}
                 >
-                  Retour au choix du tenant
+                  {t.login.backToTenant}
                 </Button>
               </form>
             )}
             <p className="yypay:mt-6 yypay:text-center yypay:text-xs yypay:text-secondary">
-              Connexion déléguée au Kernel — aucun mot de passe n&apos;est
-              stocké.
+              {t.login.delegatedAuthNote}
             </p>
             <p className="yypay:mt-2 yypay:text-center yypay:text-xs yypay:text-primary">
               <Link href="/" className="hover:yypay:text-primary">
-                Retour à l&apos;accueil
+                {t.login.backHome}
               </Link>
             </p>
           </CardContent>

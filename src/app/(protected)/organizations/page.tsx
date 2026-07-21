@@ -11,6 +11,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocale } from "@/i18n/locale-provider";
 import { bffGet, bffPost, bffPostEnvelope } from "@/lib/bff-client";
 import { performLogin } from "@/lib/auth-login-flow";
 import {
@@ -83,6 +84,7 @@ export default function OrganizationsPage() {
 
 function OrganizationsPageContent() {
   const router = useRouter();
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
   const {
@@ -143,7 +145,7 @@ function OrganizationsPageContent() {
       );
       const data = result.data;
       if (!data?.selectionToken) {
-        throw new Error("Impossible de récupérer les organisations");
+        throw new Error(t.organizations.loadError);
       }
 
       setDiscoverData(data);
@@ -192,17 +194,15 @@ function OrganizationsPageContent() {
         }
 
         if (!hasCredentials() && !discoverData?.selectionToken) {
-          toast.error("Session expirée, reconnectez-vous");
+          toast.error(t.auth.sessionExpired);
           router.replace("/login");
           return;
         }
 
-        toast.error("Aucune organisation disponible pour ce compte");
+        toast.error(t.organizations.noneAvailable);
       } catch (error) {
         toast.error(
-          error instanceof Error
-            ? error.message
-            : "Erreur lors du chargement des organisations",
+          error instanceof Error ? error.message : t.organizations.loadGenericError,
         );
       } finally {
         setLoading(false);
@@ -210,6 +210,7 @@ function OrganizationsPageContent() {
     }
 
     void loadOrganizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     email,
     password,
@@ -245,7 +246,7 @@ function OrganizationsPageContent() {
     }
 
     if (!hasCredentials()) {
-      throw new Error("Session expirée, reconnectez-vous");
+      throw new Error(t.auth.sessionExpired);
     }
 
     const result = await bffPostEnvelope<DiscoverLoginContextsResponse>(
@@ -254,7 +255,7 @@ function OrganizationsPageContent() {
     );
     const data = result.data;
     if (!data?.selectionToken) {
-      throw new Error("Impossible de récupérer les organisations");
+      throw new Error(t.organizations.loadError);
     }
 
     setSelectionToken(data.selectionToken);
@@ -266,7 +267,7 @@ function OrganizationsPageContent() {
     );
     const contextId = matchingContext?.contextId;
     if (!contextId) {
-      throw new Error("Contexte introuvable pour cette organisation");
+      throw new Error(t.organizations.contextNotFound);
     }
 
     return {
@@ -283,10 +284,10 @@ function OrganizationsPageContent() {
       );
 
       if (!session.authenticated && hasCredentials()) {
-        const loginResult = await performLogin(email, password);
+        const loginResult = await performLogin(email, password, t);
         if (loginResult.kind === "mfa_required") {
           setMfaToken(loginResult.mfaToken);
-          toast.success("Code MFA envoyé par email");
+          toast.success(t.auth.mfaCodeSent);
           hardNavigate(buildMfaPath(returnTo));
           return;
         }
@@ -300,13 +301,11 @@ function OrganizationsPageContent() {
         organizationId: org.organizationId,
       });
       clearSensitive();
-      toast.success("Organisation sélectionnée");
+      toast.success(t.organizations.selected);
       hardNavigate(consolePath(returnTo));
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Impossible de sélectionner cette organisation",
+        error instanceof Error ? error.message : t.organizations.selectError,
       );
     } finally {
       setSelecting(null);
@@ -315,14 +314,14 @@ function OrganizationsPageContent() {
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
-      <ConsoleHeader title="Choisir une organisation" />
+      <ConsoleHeader title={t.organizations.headerTitle} />
       <main className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:px-4 yypay:py-8 sm:yypay:px-6">
         <div className="yypay:mb-8">
           <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
-            Vos organisations
+            {t.organizations.title}
           </h1>
           <p className="yypay:mt-2 yypay:text-muted-foreground">
-            Sélectionnez l&apos;organisation que vous souhaitez gérer.
+            {t.organizations.description}
           </p>
         </div>
 
@@ -337,9 +336,9 @@ function OrganizationsPageContent() {
         {!loading && uniqueOrgs.length === 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Aucune organisation</CardTitle>
+              <CardTitle>{t.organizations.emptyTitle}</CardTitle>
               <CardDescription>
-                Aucune organisation n&apos;est disponible pour ce compte.
+                {t.organizations.emptyDescription}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -375,7 +374,7 @@ function OrganizationsPageContent() {
                   {selecting === org.organizationId && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Gérer cette organisation
+                  {t.organizations.manageCta}
                 </Button>
               </CardContent>
             </Card>

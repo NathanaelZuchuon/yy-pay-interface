@@ -1,3 +1,4 @@
+import type { Messages } from "@/i18n/messages/fr";
 import type { components } from "@/types/schemas-payment";
 
 type TransactionResponse = components["schemas"]["TransactionResponse"];
@@ -79,42 +80,49 @@ export function getActivityStatusVariant(
   }
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  SUCCESS: "Réussi",
-  SUCCESSFUL: "Réussi",
-  COMPLETED: "Réussi",
-  PAID: "Réussi",
-  ACTIVE: "Actif",
-  RECHARGED: "Rechargé",
-  PENDING: "En attente",
-  PENDING_PAYMENT: "En attente",
-  PROCESSING: "En cours",
-  FAILED: "Échoué",
-  CANCELLED: "Annulé",
-  CANCELED: "Annulé",
-  REJECTED: "Rejeté",
-  EXPIRED: "Expiré",
+const STATUS_LABEL_KEYS: Record<
+  string,
+  keyof Messages["transactionList"]["statusLabels"]
+> = {
+  SUCCESS: "success",
+  SUCCESSFUL: "success",
+  COMPLETED: "success",
+  PAID: "success",
+  ACTIVE: "active",
+  RECHARGED: "recharged",
+  PENDING: "pending",
+  PENDING_PAYMENT: "pending",
+  PROCESSING: "processing",
+  FAILED: "failed",
+  CANCELLED: "cancelled",
+  CANCELED: "cancelled",
+  REJECTED: "rejected",
+  EXPIRED: "expired",
 };
 
-export function formatActivityStatusLabel(status?: string): string {
+export function formatActivityStatusLabel(
+  status: string | undefined,
+  t: Messages,
+): string {
   const normalized = status?.trim().toUpperCase() ?? "";
-  return STATUS_LABELS[normalized] ?? status ?? "Inconnu";
+  const key = STATUS_LABEL_KEYS[normalized];
+  return key ? t.transactionList.statusLabels[key] : status ?? t.transactionList.statusLabels.unknown;
 }
 
-export function formatActivityType(item: PaymentActivityItem): string {
+export function formatActivityType(item: PaymentActivityItem, t: Messages): string {
   switch (item.source) {
     case "wallet":
       return item.type;
     case "recharge_order":
-      return "Recharge wallet";
+      return t.transactionList.types.rechargeWallet;
     case "payment_order":
-      return `Paiement ${item.type}`;
+      return t.transactionList.types.payment(item.type);
     case "plan_order":
-      return item.type.startsWith("PLAN_")
-        ? `Plan ${item.type.slice(5)}`
-        : `Plan ${item.type}`;
+      return t.transactionList.types.plan(
+        item.type.startsWith("PLAN_") ? item.type.slice(5) : item.type,
+      );
     case "bundle_order":
-      return "Bundle services";
+      return t.transactionList.types.bundleServices;
     default: {
       const exhaustive: never = item.source;
       return exhaustive;
@@ -122,11 +130,14 @@ export function formatActivityType(item: PaymentActivityItem): string {
   }
 }
 
-export function formatActivityAmount(item: PaymentActivityItem): string {
+export function formatActivityAmount(
+  item: PaymentActivityItem,
+  intlTag: string,
+): string {
   if (item.amount == null) {
     return "-";
   }
-  const formatted = item.amount.toLocaleString("fr-FR");
+  const formatted = item.amount.toLocaleString(intlTag);
   return item.currency ? `${formatted} ${item.currency}` : formatted;
 }
 

@@ -6,59 +6,45 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { useCommercialPlanQuotes } from "@/hooks/use-commercial-plan-quotes";
+import { useLocale } from "@/i18n/locale-provider";
 import { bffGet } from "@/lib/bff-client";
 import type { BillingPeriod } from "@/lib/commercial-plan-display";
 import type { components } from "@/types/schemas-payment";
 import {
   Building2,
-  ChevronRight,
   CreditCard,
+  KeyRound,
   Lock,
+  Search,
   ShieldCheck,
   ShoppingCart,
+  Tag,
+  Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type CommercialPlanResponse = components["schemas"]["CommercialPlanResponse"];
 
-const AUTH_FLOW_STEPS = [
-  "login",
-  "MFA",
-  "discover-contexts",
-  "select-context",
-];
-
-const STEPS = [
-  {
-    icon: Lock,
-    title: "Connexion sécurisée",
-    description: "Authentification MFA par email via le Kernel IWM.",
-  },
-  {
-    icon: Building2,
-    title: "Choisir votre organisation",
-    description: "Sélectionnez le contexte organisationnel à gérer.",
-  },
-  {
-    icon: CreditCard,
-    title: "Wallet & services",
-    description: "Consultez votre solde, transactions et plans disponibles.",
-  },
-  {
-    icon: ShoppingCart,
-    title: "Payer simplement",
-    description: "Panier en mémoire, paiement wallet ou MYCOOLPAY.",
-  },
-];
+const STEP_ICONS: LucideIcon[] = [Lock, Building2, CreditCard, ShoppingCart];
+const FEATURE_ICONS: LucideIcon[] = [Wallet, Search, Tag, ShieldCheck];
+const TRUST_ICONS: LucideIcon[] = [KeyRound, Lock, ShieldCheck];
 
 export default function LandingPage() {
+  const { t } = useLocale();
+  const steps = t.landing.steps;
+  const features = t.landing.features;
+  const trustItems = [
+    t.landing.trust.delegatedAuth,
+    t.landing.trust.noPasswordStored,
+    t.landing.trust.securePayments,
+  ];
   const [plans, setPlans] = useState<CommercialPlanResponse[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("MONTHLY");
@@ -80,26 +66,40 @@ export default function LandingPage() {
       <main className="yypay:flex-1">
         <section
           id="accueil"
-          className="yypay:mx-auto yypay:max-w-6xl yypay:px-4 yypay:py-16 sm:yypay:px-6 sm:yypay:py-24"
+          className="yypay:relative yypay:overflow-hidden yypay:px-4 yypay:py-16 sm:yypay:px-6 sm:yypay:py-24"
         >
-          <div className="yypay:mx-auto yypay:max-w-3xl yypay:text-center">
-            <Badge className="yypay:mb-4">Plateforme de paiement IWM</Badge>
+          <div
+            aria-hidden
+            className="yypay:pointer-events-none yypay:absolute yypay:left-1/2 yypay:top-0 yypay:h-[32rem] yypay:w-[32rem] yypay:-translate-x-1/2 yypay:-translate-y-1/3 yypay:rounded-full yypay:bg-primary/10 yypay:blur-3xl"
+          />
+          <div className="yypay:relative yypay:mx-auto yypay:max-w-3xl yypay:text-center">
+            <Badge className="yypay:mb-4">{t.landing.badge}</Badge>
             <h1 className="yypay:text-3xl yypay:font-bold yypay:tracking-tight yypay:text-foreground sm:yypay:text-5xl">
-              Gérez vos paiements et abonnements en toute simplicité
+              {t.landing.heroTitle}
             </h1>
             <p className="yypay:mt-4 yypay:text-base yypay:text-muted-foreground sm:yypay:text-lg">
-              YowYob Payment centralise wallet, transactions et souscription aux
-              services via un parcours sécurisé délégué au Kernel - aucun mot de
-              passe n&apos;est stocké côté front.
+              {t.landing.heroDescription}
             </p>
             <div className="yypay:mt-8 yypay:flex yypay:flex-col yypay:items-center yypay:justify-center yypay:gap-3 sm:yypay:flex-row">
               <Button asChild size="lg">
-                <Link href="/login">Se connecter</Link>
+                <Link href="/login">{t.landing.login}</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <a href="#tarifs">Voir les tarifs</a>
+                <a href="#tarifs">{t.landing.seePricing}</a>
               </Button>
             </div>
+
+            <ul className="yypay:mt-10 yypay:flex yypay:flex-col yypay:items-center yypay:justify-center yypay:gap-3 yypay:text-sm yypay:text-muted-foreground sm:yypay:flex-row sm:yypay:gap-6">
+              {trustItems.map((item, index) => {
+                const Icon = TRUST_ICONS[index];
+                return (
+                  <li key={item} className="yypay:flex yypay:items-center yypay:gap-2">
+                    <Icon className="yypay:h-4 yypay:w-4 yypay:text-primary" />
+                    {item}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </section>
 
@@ -110,25 +110,35 @@ export default function LandingPage() {
           <div className="yypay:mx-auto yypay:max-w-6xl yypay:px-4 sm:yypay:px-6">
             <div className="yypay:mb-10 yypay:text-center">
               <h2 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
-                Comment ça marche
+                {t.landing.howItWorksTitle}
               </h2>
               <p className="yypay:mt-2 yypay:text-muted-foreground">
-                Un parcours en 4 étapes, de la connexion au paiement.
+                {t.landing.howItWorksDescription}
               </p>
             </div>
             <div className="yypay:grid yypay:grid-cols-1 yypay:gap-6 sm:yypay:grid-cols-2 lg:yypay:grid-cols-4">
-              {STEPS.map((step) => (
-                <Card
-                  key={step.title}
-                  className="yypay:transition-transform hover:yypay:-translate-y-0.5 hover:yypay:shadow-card-hover"
-                >
-                  <CardHeader>
-                    <step.icon className="yypay:mb-2 yypay:h-8 yypay:w-8 yypay:text-primary" />
-                    <CardTitle className="yypay:text-lg">{step.title}</CardTitle>
-                    <CardDescription>{step.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              ))}
+              {steps.map((step, index) => {
+                const Icon = STEP_ICONS[index];
+                return (
+                  <Card
+                    key={step.title}
+                    className="yypay:relative yypay:transition-transform hover:yypay:-translate-y-0.5 hover:yypay:shadow-card-hover"
+                  >
+                    <CardHeader>
+                      <div className="yypay:flex yypay:items-center yypay:justify-between">
+                        <span className="yypay:flex yypay:h-10 yypay:w-10 yypay:items-center yypay:justify-center yypay:rounded-lg yypay:bg-primary/10 yypay:text-primary">
+                          <Icon className="yypay:h-5 yypay:w-5" />
+                        </span>
+                        <span className="yypay:text-sm yypay:font-semibold yypay:text-muted-foreground/60">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <CardTitle className="yypay:mt-2 yypay:text-lg">{step.title}</CardTitle>
+                      <CardDescription>{step.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -137,45 +147,37 @@ export default function LandingPage() {
           id="documentation"
           className="yypay:mx-auto yypay:max-w-6xl yypay:px-4 yypay:py-16 sm:yypay:px-6"
         >
-          <Card>
-            <CardHeader>
-              <div className="yypay:flex yypay:items-center yypay:gap-2">
-                <ShieldCheck className="yypay:h-5 yypay:w-5 yypay:text-primary" />
-                <CardTitle>Documentation technique</CardTitle>
-              </div>
-              <CardDescription>
-                Le front consomme exclusivement le BFF Next.js. Les types proviennent
-                des OpenAPI auth et payment.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="yypay:grid yypay:gap-4 sm:yypay:grid-cols-2">
-              <div className="yypay:rounded-lg yypay:border yypay:border-border yypay:bg-muted/40 yypay:p-4">
-                <p className="yypay:font-medium yypay:text-foreground">Auth</p>
-                <div className="yypay:mt-2 yypay:flex yypay:flex-wrap yypay:items-center yypay:gap-1.5 yypay:text-sm yypay:text-muted-foreground">
-                  {AUTH_FLOW_STEPS.map((step, index) => (
-                    <span
-                      key={step}
-                      className="yypay:inline-flex yypay:items-center yypay:gap-1.5"
-                    >
-                      {index > 0 && (
-                        <ChevronRight
-                          className="yypay:h-3.5 yypay:w-3.5 yypay:shrink-0 yypay:text-muted-foreground/70"
-                          aria-hidden
-                        />
-                      )}
-                      <span>{step}</span>
+          <div className="yypay:mb-10 yypay:text-center">
+            <h2 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
+              {t.landing.featuresTitle}
+            </h2>
+            <p className="yypay:mt-2 yypay:text-muted-foreground">
+              {t.landing.featuresDescription}
+            </p>
+          </div>
+          <div className="yypay:grid yypay:grid-cols-1 yypay:gap-6 sm:yypay:grid-cols-2">
+            {features.map((feature, index) => {
+              const Icon = FEATURE_ICONS[index];
+              return (
+                <Card
+                  key={feature.title}
+                  className="yypay:transition-transform hover:yypay:-translate-y-0.5 hover:yypay:shadow-card-hover"
+                >
+                  <CardHeader className="yypay:flex-row yypay:items-start yypay:gap-4 yypay:space-y-0">
+                    <span className="yypay:flex yypay:h-11 yypay:w-11 yypay:shrink-0 yypay:items-center yypay:justify-center yypay:rounded-xl yypay:bg-primary yypay:text-primary-foreground">
+                      <Icon className="yypay:h-5 yypay:w-5" />
                     </span>
-                  ))}
-                </div>
-              </div>
-              <div className="yypay:rounded-lg yypay:border yypay:border-border yypay:bg-muted/40 yypay:p-4">
-                <p className="yypay:font-medium yypay:text-foreground">Payment</p>
-                <p className="yypay:mt-1 yypay:text-sm yypay:text-muted-foreground">
-                  wallet, transactions, plans commerciaux, service-bundles, MYCOOLPAY
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                    <div>
+                      <CardTitle className="yypay:text-lg">{feature.title}</CardTitle>
+                      <CardDescription className="yypay:mt-1.5">
+                        {feature.description}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
+              );
+            })}
+          </div>
         </section>
 
         <section
@@ -190,7 +192,7 @@ export default function LandingPage() {
               quotesLoading={quotesLoading}
               billingPeriod={billingPeriod}
               onBillingPeriodChange={setBillingPeriod}
-              getCtaLabel={() => "Commencer"}
+              getCtaLabel={() => t.landing.getStarted}
               onSelectPlan={() => {
                 globalThis.location.assign("/login");
               }}
@@ -198,6 +200,27 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+
+      <footer className="yypay:border-t yypay:border-border yypay:bg-card">
+        <div className="yypay:mx-auto yypay:flex yypay:max-w-6xl yypay:flex-col yypay:items-center yypay:justify-between yypay:gap-4 yypay:px-4 yypay:py-8 sm:yypay:flex-row sm:yypay:px-6">
+          <div className="yypay:flex yypay:items-center yypay:gap-2">
+            <span className="yypay:flex yypay:h-8 yypay:w-8 yypay:items-center yypay:justify-center yypay:rounded-lg yypay:bg-primary yypay:text-primary-foreground">
+              <Wallet className="yypay:h-4 yypay:w-4" />
+            </span>
+            <div>
+              <p className="yypay:text-sm yypay:font-semibold yypay:text-foreground">
+                YowYob Payment
+              </p>
+              <p className="yypay:text-xs yypay:text-muted-foreground">
+                {t.landing.footerTagline}
+              </p>
+            </div>
+          </div>
+          <p className="yypay:text-xs yypay:text-muted-foreground">
+            {t.landing.footerRights(new Date().getFullYear())}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

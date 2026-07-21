@@ -1,5 +1,6 @@
 "use client";
 
+import { LanguageToggle } from "@/components/language/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -10,16 +11,11 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { useLocale } from "@/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Menu, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-
-const NAV_ITEMS = [
-  { href: "/#accueil", label: "Accueil" },
-  { href: "/#documentation", label: "Documentation" },
-  { href: "/#tarifs", label: "Tarifs" },
-] as const;
 
 type SiteHeaderProps = {
   showLogin?: boolean;
@@ -27,6 +23,13 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useLocale();
+
+  const navItems = [
+    { href: "/#accueil", label: t.siteHeader.nav.home },
+    { href: "/#documentation", label: t.siteHeader.nav.documentation },
+    { href: "/#tarifs", label: t.siteHeader.nav.pricing },
+  ];
 
   return (
     <header className="yypay:sticky yypay:top-0 yypay:z-40 yypay:border-b yypay:border-border yypay:bg-card/90 yypay:backdrop-blur">
@@ -44,7 +47,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
         </Link>
 
         <nav className="yypay:hidden yypay:items-center yypay:gap-8 md:yypay:flex">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -56,6 +59,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
         </nav>
 
         <div className="yypay:flex yypay:items-center yypay:gap-1 sm:yypay:gap-2">
+          <LanguageToggle />
           <ThemeToggle />
 
           <div className="yypay:hidden yypay:items-center yypay:gap-2 md:yypay:flex">
@@ -65,10 +69,10 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
                   href="/login"
                   className="yypay:text-sm yypay:font-medium yypay:text-muted-foreground hover:yypay:text-foreground"
                 >
-                  Se connecter
+                  {t.siteHeader.login}
                 </Link>
                 <Button asChild size="sm">
-                  <Link href="/login">Créer un compte</Link>
+                  <Link href="/login">{t.siteHeader.signup}</Link>
                 </Button>
               </>
             )}
@@ -76,7 +80,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild className="md:yypay:hidden">
-              <Button variant="ghost" size="icon" aria-label="Menu">
+              <Button variant="ghost" size="icon" aria-label={t.siteHeader.menu}>
                 <Menu className="yypay:h-5 yypay:w-5" />
               </Button>
             </SheetTrigger>
@@ -85,11 +89,11 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
               className="md:yypay:hidden yypay:w-full yypay:max-w-sm yypay:gap-0 yypay:p-0"
             >
               <SheetHeader className="yypay:border-b yypay:border-border yypay:px-6 yypay:py-5 yypay:pr-14">
-                <SheetTitle>Menu</SheetTitle>
+                <SheetTitle>{t.siteHeader.menu}</SheetTitle>
               </SheetHeader>
 
               <nav className="yypay:flex yypay:flex-1 yypay:flex-col yypay:gap-1 yypay:px-4 yypay:py-6">
-                {NAV_ITEMS.map((item) => (
+                {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -109,7 +113,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
                 ))}
 
                 <div className="yypay:mt-4 yypay:flex yypay:items-center yypay:justify-between yypay:rounded-lg yypay:border yypay:border-border yypay:px-4 yypay:py-3">
-                  <span className="yypay:text-sm yypay:font-medium">Thème</span>
+                  <span className="yypay:text-sm yypay:font-medium">{t.siteHeader.theme}</span>
                   <ThemeToggle />
                 </div>
 
@@ -126,7 +130,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
                         "hover:yypay:bg-primary/90",
                       )}
                     >
-                      Se connecter
+                      {t.siteHeader.login}
                     </Link>
                     <Link
                       href="/login"
@@ -138,7 +142,7 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
                         "hover:yypay:bg-muted",
                       )}
                     >
-                      Créer un compte
+                      {t.siteHeader.signup}
                     </Link>
                   </>
                 )}

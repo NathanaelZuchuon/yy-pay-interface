@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useLocale } from "@/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -24,44 +25,7 @@ import {
 
 const ONBOARDING_STORAGE_KEY = "yypay-onboarding-completed";
 
-type OnboardingStep = {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-};
-
-const STEPS: OnboardingStep[] = [
-  {
-    icon: Sparkles,
-    title: "Bienvenue sur YowYob Payment",
-    description:
-      "Votre wallet, vos transactions et vos abonnements réunis dans un seul espace, pensé pour aller vite.",
-  },
-  {
-    icon: Wallet,
-    title: "Votre wallet, toujours à portée de main",
-    description:
-      "Créez votre wallet, rechargez-le via MYCOOLPAY et suivez votre solde en temps réel depuis la Vue d'ensemble.",
-  },
-  {
-    icon: Receipt,
-    title: "Un historique clair et filtrable",
-    description:
-      "Recherchez et filtrez par statut : recharges, paiements, plans et bundles, tout est centralisé dans Transactions.",
-  },
-  {
-    icon: Tag,
-    title: "Des plans adaptés à vos besoins",
-    description:
-      "Comparez les plans dans l'onglet Plans, ajoutez-les au panier et payez en toute sécurité.",
-  },
-  {
-    icon: PanelLeft,
-    title: "Une navigation qui s'adapte à vous",
-    description:
-      "La barre latérale vous suit partout : repliable en un geste sur mobile, toujours visible sur desktop.",
-  },
-];
+const STEP_ICONS: LucideIcon[] = [Sparkles, Wallet, Receipt, Tag, PanelLeft];
 
 type OnboardingContextValue = {
   restart: () => void;
@@ -78,6 +42,8 @@ export function useOnboarding() {
 }
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
+  const { t } = useLocale();
+  const steps = t.onboarding.steps;
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
@@ -100,9 +66,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setOpen(true);
   }, []);
 
-  const isLastStep = step === STEPS.length - 1;
-  const current = STEPS[step];
-  const Icon = current.icon;
+  const isLastStep = step === steps.length - 1;
+  const current = steps[step];
+  const Icon = STEP_ICONS[step];
 
   return (
     <OnboardingContext.Provider value={{ restart }}>
@@ -147,11 +113,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
             </div>
 
             <div className="yypay:relative yypay:mt-6 yypay:flex yypay:items-center yypay:justify-center yypay:gap-2">
-              {STEPS.map((_, index) => (
+              {steps.map((_, index) => (
                 <button
                   key={index}
                   type="button"
-                  aria-label={`Aller à l'étape ${index + 1}`}
+                  aria-label={t.onboarding.goToStep(index + 1)}
                   onClick={() => setStep(index)}
                   className={cn(
                     "yypay:h-1.5 yypay:rounded-full yypay:transition-all",
@@ -166,7 +132,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
           <div className="yypay:flex yypay:items-center yypay:justify-between yypay:gap-3 yypay:border-t yypay:border-border yypay:px-6 yypay:py-4">
             <Button variant="ghost" size="sm" onClick={complete}>
-              Passer
+              {t.onboarding.skip}
             </Button>
 
             <div className="yypay:flex yypay:items-center yypay:gap-2">
@@ -177,7 +143,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
                   onClick={() => setStep((value) => Math.max(0, value - 1))}
                 >
                   <ChevronLeft className="yypay:h-4 yypay:w-4" />
-                  Précédent
+                  {t.onboarding.previous}
                 </Button>
               )}
               <Button
@@ -186,11 +152,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
                   if (isLastStep) {
                     complete();
                   } else {
-                    setStep((value) => Math.min(STEPS.length - 1, value + 1));
+                    setStep((value) => Math.min(steps.length - 1, value + 1));
                   }
                 }}
               >
-                {isLastStep ? "Commencer" : "Suivant"}
+                {isLastStep ? t.onboarding.start : t.onboarding.next}
                 {!isLastStep && <ChevronRight className="yypay:h-4 yypay:w-4" />}
               </Button>
             </div>

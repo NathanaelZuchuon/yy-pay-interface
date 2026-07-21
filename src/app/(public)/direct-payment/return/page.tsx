@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { useLocale } from "@/i18n/locale-provider";
 import { bffFetch } from "@/lib/bff-client";
 import { DIRECT_PAYMENT_SESSION_STORAGE_KEY } from "@/lib/bundle-constants";
 import type { DirectPaymentSession } from "@/lib/direct-payment";
@@ -41,6 +42,7 @@ export default function DirectPaymentReturnPage() {
 }
 
 function DirectPaymentReturnContent() {
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const paymentReturn = useMemo(
     () => parsePaymentReturn(searchParams.get("payment")),
@@ -56,7 +58,7 @@ function DirectPaymentReturnContent() {
     async function finalizePayment() {
       const raw = sessionStorage.getItem(DIRECT_PAYMENT_SESSION_STORAGE_KEY);
       if (!raw) {
-        setError("Session de paiement introuvable");
+        setError(t.directPayment.return.sessionNotFound);
         setLoading(false);
         return;
       }
@@ -65,7 +67,7 @@ function DirectPaymentReturnContent() {
       try {
         session = JSON.parse(raw) as DirectPaymentSession;
       } catch {
-        setError("Session de paiement invalide");
+        setError(t.directPayment.return.sessionInvalid);
         setLoading(false);
         return;
       }
@@ -110,9 +112,7 @@ function DirectPaymentReturnContent() {
         }
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Erreur lors de la finalisation du paiement",
+          err instanceof Error ? err.message : t.directPayment.return.finalizeError,
         );
       } finally {
         setLoading(false);
@@ -120,6 +120,7 @@ function DirectPaymentReturnContent() {
     }
 
     void finalizePayment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentReturn]);
 
   useEffect(() => {
@@ -147,10 +148,10 @@ function DirectPaymentReturnContent() {
 
   const isSuccess = result?.success;
   const title = loading
-    ? "Finalisation du paiement"
+    ? t.directPayment.return.finalizing
     : isSuccess
-      ? "Paiement réussi"
-      : "Paiement non abouti";
+      ? t.directPayment.return.success
+      : t.directPayment.return.failed;
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:items-center yypay:justify-center yypay:bg-background yypay:px-4 yypay:py-10">
@@ -166,11 +167,11 @@ function DirectPaymentReturnContent() {
           <CardTitle>{title}</CardTitle>
           <CardDescription>
             {loading
-              ? "Vérification du statut auprès du fournisseur de paiement..."
+              ? t.directPayment.return.verifying
               : error ??
                 (isSuccess
-                  ? "Votre transaction a été confirmée."
-                  : `Statut : ${result?.status ?? "échec"}`)}
+                  ? t.directPayment.return.confirmed
+                  : `${t.directPayment.return.statusPrefix} ${result?.status ?? t.directPayment.return.unknownStatus}`)}
           </CardDescription>
         </CardHeader>
         <CardContent className="yypay:space-y-4 yypay:text-center">
@@ -180,20 +181,20 @@ function DirectPaymentReturnContent() {
             </p>
           )}
           {!loading && result?.orgWalletCredited && (
-            <Badge variant="success">Wallet organisation crédité</Badge>
+            <Badge variant="success">{t.directPayment.return.orgWalletCredited}</Badge>
           )}
           {!loading && (
             <p className="yypay:text-sm yypay:text-muted-foreground">
-              Cette fenêtre se fermera automatiquement dans{" "}
+              {t.directPayment.return.closingIn}{" "}
               <span className="yypay:font-semibold yypay:text-foreground">
                 {secondsLeft}
               </span>{" "}
-              seconde{secondsLeft > 1 ? "s" : ""}.
+              {t.directPayment.return.secondsLabel(secondsLeft)}.
             </p>
           )}
           {!loading && (
             <p className="yypay:text-xs yypay:text-muted-foreground">
-              Si la fenêtre ne se ferme pas, vous pouvez la fermer manuellement.
+              {t.directPayment.return.manualCloseNote}
             </p>
           )}
         </CardContent>

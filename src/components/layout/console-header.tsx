@@ -1,6 +1,7 @@
 "use client";
 
 import { CartSheet } from "@/components/cart/cart-sheet";
+import { LanguageToggle } from "@/components/language/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useLocale } from "@/i18n/locale-provider";
 import { bffPost } from "@/lib/bff-client";
 import { useCartStore } from "@/stores/cart-store";
 import { CircleHelp, LogOut, Menu, ShoppingCart, Wallet } from "lucide-react";
@@ -36,6 +38,7 @@ export function ConsoleHeader({
 }: ConsoleHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLocale();
   const itemCount = useCartStore((state) => state.itemCount());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -48,10 +51,10 @@ export function ConsoleHeader({
   async function handleLogout() {
     try {
       await bffPost("/api/auth/logout", {});
-      toast.success("Déconnexion réussie");
-      router.push("/login");
+      toast.success(t.header.logoutSuccess);
+      router.push("/");
     } catch {
-      toast.error("Erreur lors de la déconnexion");
+      toast.error(t.header.logoutError);
     }
   }
 
@@ -66,14 +69,14 @@ export function ConsoleHeader({
                   variant="ghost"
                   size="icon"
                   className="yypay:shrink-0 lg:yypay:hidden"
-                  aria-label="Ouvrir la navigation"
+                  aria-label={t.header.openNav}
                 >
                   <Menu className="yypay:h-5 yypay:w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="yypay:w-72">
                 <SheetHeader>
-                  <SheetTitle>Navigation</SheetTitle>
+                  <SheetTitle>{t.header.navigationTitle}</SheetTitle>
                 </SheetHeader>
                 <div className="yypay:overflow-y-auto yypay:px-4 yypay:pb-6">
                   {sidebar}
@@ -103,11 +106,12 @@ export function ConsoleHeader({
               variant="ghost"
               size="icon"
               onClick={onOpenHelp}
-              aria-label="Revoir la présentation"
+              aria-label={t.header.help}
             >
               <CircleHelp className="yypay:h-4 yypay:w-4" />
             </Button>
           )}
+          <LanguageToggle />
           <ThemeToggle />
           <CartSheet
             walletName={walletName}
@@ -123,7 +127,7 @@ export function ConsoleHeader({
             }
             onCheckoutComplete={onCheckoutComplete}
           />
-          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Se déconnecter">
+          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t.header.logout}>
             <LogOut className="yypay:h-4 yypay:w-4" />
           </Button>
         </div>

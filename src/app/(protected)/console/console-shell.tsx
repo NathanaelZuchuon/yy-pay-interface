@@ -10,6 +10,7 @@ import {
   OnboardingProvider,
   useOnboarding,
 } from "@/components/onboarding/onboarding-tour";
+import { useLocale } from "@/i18n/locale-provider";
 import { bffPost } from "@/lib/bff-client";
 import {
   BUNDLE_ORDER_STORAGE_KEY,
@@ -29,12 +30,6 @@ type ServiceBundleOrderResponse =
 type WalletRechargeResponse =
   components["schemas"]["WalletRechargeResponse"];
 
-const PAGE_TITLES: Record<string, string> = {
-  "/console": "Vue d'ensemble",
-  "/console/transactions": "Transactions",
-  "/console/plans": "Plans disponibles",
-};
-
 function isFailureStatus(status?: string): boolean {
   const normalized = status?.trim().toUpperCase();
   return (
@@ -49,6 +44,8 @@ function PaymentReturnHandler() {
   const searchParams = useSearchParams();
   const paymentReturn = parsePaymentReturn(searchParams.get("payment"));
   const { bumpRefresh } = useConsoleData();
+  const { t } = useLocale();
+  const pr = t.paymentReturn;
 
   useEffect(() => {
     const commercialPlanOrderId = sessionStorage.getItem(
@@ -81,11 +78,11 @@ function PaymentReturnHandler() {
       }
 
       if (paymentReturn === "success") {
-        toast.success("Retour paiement reçu. Mise à jour en cours…");
+        toast.success(pr.genericSuccess);
       } else if (paymentReturn === "cancelled") {
-        toast.error("Paiement annulé.");
+        toast.error(pr.genericCancelled);
       } else {
-        toast.error("Le paiement a échoué.");
+        toast.error(pr.genericFailed);
       }
 
       bumpRefresh();
@@ -103,30 +100,28 @@ function PaymentReturnHandler() {
           sessionStorage.removeItem(RECHARGE_ORDER_STORAGE_KEY);
 
           if (order.status === "RECHARGED") {
-            toast.success("Recharge confirmée. Votre wallet a été crédité.");
+            toast.success(pr.rechargeConfirmed);
           } else if (isFailureStatus(order.status)) {
             toast.error(
               paymentReturn === "cancelled"
-                ? "Recharge annulée."
-                : "La recharge a échoué ou a été annulée.",
+                ? pr.rechargeCancelled
+                : pr.rechargeFailedOrCancelled,
             );
           } else if (paymentReturn === "failure" || paymentReturn === "cancelled") {
             toast.error(
               paymentReturn === "cancelled"
-                ? "Recharge annulée."
-                : "La recharge a échoué.",
+                ? pr.rechargeCancelled
+                : pr.rechargeFailed,
             );
           } else {
-            toast.success("Paiement reçu. Traitement de la recharge en cours…");
+            toast.success(pr.rechargeProcessing);
           }
 
           bumpRefresh();
         } catch (error) {
           if (!cancelled) {
             toast.error(
-              error instanceof Error
-                ? error.message
-                : "Impossible de confirmer la recharge",
+              error instanceof Error ? error.message : pr.rechargeConfirmError,
             );
           }
         }
@@ -151,21 +146,19 @@ function PaymentReturnHandler() {
           sessionStorage.removeItem(COMMERCIAL_PLAN_ORDER_STORAGE_KEY);
 
           if (order.status === "ACTIVE") {
-            toast.success("Paiement confirmé. Votre plan est activé.");
+            toast.success(pr.planActivated);
           } else if (isFailureStatus(order.status)) {
             toast.error(
               paymentReturn === "cancelled"
-                ? "Paiement du plan annulé."
-                : "Le paiement du plan a échoué ou a été annulé.",
+                ? pr.planCancelled
+                : pr.planFailedOrCancelled,
             );
           } else if (paymentReturn === "failure" || paymentReturn === "cancelled") {
             toast.error(
-              paymentReturn === "cancelled"
-                ? "Paiement du plan annulé."
-                : "Le paiement du plan a échoué.",
+              paymentReturn === "cancelled" ? pr.planCancelled : pr.planFailed,
             );
           } else {
-            toast.success("Paiement reçu. Traitement en cours…");
+            toast.success(pr.processing);
           }
         } else {
           const order = await bffPost<ServiceBundleOrderResponse>(
@@ -177,32 +170,26 @@ function PaymentReturnHandler() {
           sessionStorage.removeItem(BUNDLE_ORDER_STORAGE_KEY);
 
           if (order.status === "ACTIVE") {
-            toast.success("Paiement confirmé. Vos services sont activés.");
+            toast.success(pr.bundleActivated);
           } else if (isFailureStatus(order.status)) {
             toast.error(
               paymentReturn === "cancelled"
-                ? "Paiement du bundle annulé."
-                : "Le paiement du bundle a échoué ou a été annulé.",
+                ? pr.bundleCancelled
+                : pr.bundleFailedOrCancelled,
             );
           } else if (paymentReturn === "failure" || paymentReturn === "cancelled") {
             toast.error(
-              paymentReturn === "cancelled"
-                ? "Paiement du bundle annulé."
-                : "Le paiement du bundle a échoué.",
+              paymentReturn === "cancelled" ? pr.bundleCancelled : pr.bundleFailed,
             );
           } else {
-            toast.success("Paiement reçu. Traitement en cours…");
+            toast.success(pr.processing);
           }
         }
 
         bumpRefresh();
       } catch (error) {
         if (!cancelled) {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "Impossible de confirmer le paiement",
-          );
+          toast.error(error instanceof Error ? error.message : pr.confirmError);
         }
       } finally {
         if (!cancelled) {
@@ -216,6 +203,7 @@ function PaymentReturnHandler() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentReturn, bumpRefresh, router]);
 
   return null;
@@ -225,7 +213,13 @@ function ConsoleChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { wallet, bumpRefresh } = useConsoleData();
   const { restart } = useOnboarding();
-  const title = PAGE_TITLES[pathname] ?? "Console";
+  const { t } = useLocale();
+  const pageTitles: Record<string, string> = {
+    "/console": t.sidebar.overview,
+    "/console/transactions": t.sidebar.transactions,
+    "/console/plans": t.sidebar.plans,
+  };
+  const title = pageTitles[pathname] ?? "Console";
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">

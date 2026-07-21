@@ -10,6 +10,8 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toIntlTag } from "@/i18n/format";
+import { useLocale } from "@/i18n/locale-provider";
 import { bffFetch } from "@/lib/bff-client";
 import { DIRECT_PAYMENT_SESSION_STORAGE_KEY } from "@/lib/bundle-constants";
 import type { DirectPaymentSession } from "@/lib/direct-payment";
@@ -42,8 +44,8 @@ type CheckoutResponse = {
   session: DirectPaymentSession;
 };
 
-function formatAmount(amount: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
+function formatAmount(amount: number, currency: string, intlTag: string) {
+  return new Intl.NumberFormat(intlTag, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
@@ -66,6 +68,8 @@ export default function DirectPaymentPage() {
 
 function DirectPaymentContent() {
   const router = useRouter();
+  const { t, locale } = useLocale();
+  const intlTag = toIntlTag(locale);
   const searchParams = useSearchParams();
   const queryString = useMemo(() => searchParams.toString(), [searchParams]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +82,7 @@ function DirectPaymentContent() {
   useEffect(() => {
     async function loadContext() {
       if (!queryString) {
-        setError("Paramètres de paiement manquants");
+        setError(t.directPayment.missingParams);
         setLoading(false);
         return;
       }
@@ -101,17 +105,14 @@ function DirectPaymentContent() {
         );
         setContext(data);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Impossible de charger le paiement",
-        );
+        setError(err instanceof Error ? err.message : t.directPayment.loadError);
       } finally {
         setLoading(false);
       }
     }
 
     void loadContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString, router]);
 
   async function handlePay() {
@@ -129,21 +130,19 @@ function DirectPaymentContent() {
         JSON.stringify(result.session),
       );
       if (!result.redirectUrl) {
-        throw new Error("URL de paiement MYCOOLPAY introuvable");
+        throw new Error(t.directPayment.redirectUrlMissing);
       }
       window.location.assign(result.redirectUrl);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Échec du lancement du paiement",
-      );
+      toast.error(err instanceof Error ? err.message : t.directPayment.launchError);
       setPaying(false);
     }
   }
 
   const modeLabel =
     context?.mode === "of_org"
-      ? "Achat d'un service de l'organisation"
-      : "Achat pour l'organisation";
+      ? t.directPayment.modeOfOrg
+      : t.directPayment.modeForOrg;
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
@@ -157,7 +156,7 @@ function DirectPaymentContent() {
               YowYob Payment
             </p>
             <h1 className="yypay:text-lg yypay:font-semibold yypay:text-foreground">
-              Paiement direct
+              {t.directPayment.brandTitle}
             </h1>
           </div>
         </div>
@@ -175,7 +174,7 @@ function DirectPaymentContent() {
         {!loading && error && (
           <Card>
             <CardHeader>
-              <CardTitle>Paiement indisponible</CardTitle>
+              <CardTitle>{t.directPayment.unavailableTitle}</CardTitle>
               <CardDescription>{error}</CardDescription>
             </CardHeader>
           </Card>
@@ -198,19 +197,19 @@ function DirectPaymentContent() {
             <CardContent className="yypay:space-y-6">
               <dl className="yypay:space-y-3 yypay:text-sm">
                 <div className="yypay:flex yypay:justify-between yypay:gap-4">
-                  <dt className="yypay:text-muted-foreground">Quantité</dt>
+                  <dt className="yypay:text-muted-foreground">{t.directPayment.quantityLabel}</dt>
                   <dd className="yypay:font-medium">{context.quantity}</dd>
                 </div>
                 <div className="yypay:flex yypay:justify-between yypay:gap-4">
-                  <dt className="yypay:text-muted-foreground">Prix unitaire</dt>
+                  <dt className="yypay:text-muted-foreground">{t.directPayment.unitPriceLabel}</dt>
                   <dd className="yypay:font-medium">
-                    {formatAmount(context.unitAmount, context.currency)}
+                    {formatAmount(context.unitAmount, context.currency, intlTag)}
                   </dd>
                 </div>
                 <div className="yypay:flex yypay:justify-between yypay:gap-4 yypay:border-t yypay:border-border yypay:pt-3">
-                  <dt className="yypay:font-semibold">Total</dt>
+                  <dt className="yypay:font-semibold">{t.directPayment.totalLabel}</dt>
                   <dd className="yypay:text-lg yypay:font-bold yypay:text-primary">
-                    {formatAmount(context.totalAmount, context.currency)}
+                    {formatAmount(context.totalAmount, context.currency, intlTag)}
                   </dd>
                 </div>
               </dl>
@@ -224,12 +223,11 @@ function DirectPaymentContent() {
                 {paying && (
                   <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                 )}
-                Payer avec MYCOOLPAY
+                {t.directPayment.payWithMycoolpay}
               </Button>
 
               <p className="yypay:text-center yypay:text-xs yypay:text-muted-foreground">
-                Le montant est recalculé côté serveur à partir de l&apos;API
-                article de l&apos;organisation.
+                {t.directPayment.serverRecalcNote}
               </p>
             </CardContent>
           </Card>

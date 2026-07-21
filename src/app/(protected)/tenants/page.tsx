@@ -11,6 +11,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocale } from "@/i18n/locale-provider";
 import { performLogin } from "@/lib/auth-login-flow";
 import {
     mfaPath as buildMfaPath,
@@ -48,6 +49,7 @@ export default function TenantsPage() {
 
 function TenantsPageContent() {
   const router = useRouter();
+  const { t } = useLocale();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
   const {
@@ -65,15 +67,15 @@ function TenantsPageContent() {
   const [tenants, setTenants] = useState<TenantOption[]>([]);
 
   async function authenticateAfterTenantSelection() {
-    const loginResult = await performLogin(email, password);
+    const loginResult = await performLogin(email, password, t);
     if (loginResult.kind === "authenticated") {
-      toast.success("Authentification réussie");
+      toast.success(t.login.authSuccess);
       hardNavigate(buildOrganizationsPath(returnTo));
       return;
     }
 
     setMfaToken(loginResult.mfaToken);
-    toast.success("Code MFA envoyé par email");
+    toast.success(t.auth.mfaCodeSent);
     hardNavigate(buildMfaPath(returnTo));
   }
 
@@ -91,9 +93,7 @@ function TenantsPageContent() {
       await authenticateAfterTenantSelection();
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Impossible de sélectionner ce tenant",
+        error instanceof Error ? error.message : t.tenants.selectError,
       );
       setSelecting(null);
     }
@@ -102,7 +102,7 @@ function TenantsPageContent() {
   useEffect(() => {
     async function loadTenants() {
       if (!hasCredentials()) {
-        toast.error("Session expirée, reconnectez-vous");
+        toast.error(t.auth.sessionExpired);
         router.replace("/login");
         return;
       }
@@ -116,7 +116,7 @@ function TenantsPageContent() {
           );
           resolvedData = result.data ?? null;
           if (!resolvedData?.selectionToken) {
-            throw new Error("Impossible de récupérer les tenants");
+            throw new Error(t.tenants.loadError);
           }
           setSelectionToken(resolvedData.selectionToken);
           setDiscoverData(resolvedData);
@@ -124,7 +124,7 @@ function TenantsPageContent() {
 
         const options = mapDiscoverToTenantOptions(resolvedData);
         if (options.length === 0) {
-          toast.error("Aucun tenant disponible pour ce compte");
+          toast.error(t.tenants.noneAvailable);
           return;
         }
 
@@ -136,9 +136,7 @@ function TenantsPageContent() {
         setTenants(options);
       } catch (error) {
         toast.error(
-          error instanceof Error
-            ? error.message
-            : "Erreur lors du chargement des tenants",
+          error instanceof Error ? error.message : t.tenants.loadGenericError,
         );
       } finally {
         setLoading(false);
@@ -160,15 +158,15 @@ function TenantsPageContent() {
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
-      <ConsoleHeader title="Choisir un tenant" />
+      <ConsoleHeader title={t.tenants.headerTitle} />
       <main className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:px-4 yypay:py-8 sm:yypay:px-6">
         <div className="yypay:mb-8">
           <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
-            Vos tenants
+            {t.tenants.title}
           </h1>
           <p className="yypay:mt-2 yypay:text-muted-foreground">
-            Sélectionnez le tenant à utiliser. La connexion au Kernel sera
-            effectuée avec l&apos;en-tête <code>X-Tenant-Id</code> requis.
+            {t.tenants.descriptionPrefix} <code>X-Tenant-Id</code>{" "}
+            {t.tenants.descriptionSuffix}
           </p>
         </div>
 
@@ -183,9 +181,9 @@ function TenantsPageContent() {
         {!loading && tenants.length === 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Aucun tenant</CardTitle>
+              <CardTitle>{t.tenants.emptyTitle}</CardTitle>
               <CardDescription>
-                Aucun tenant n&apos;est disponible pour ce compte.
+                {t.tenants.emptyDescription}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -209,7 +207,7 @@ function TenantsPageContent() {
                 <div className="yypay:flex yypay:flex-wrap yypay:gap-2">
                   <Badge variant="secondary">
                     <Building2 className="yypay:mr-1 yypay:h-3 yypay:w-3" />
-                    {tenant.organizationCount} org.
+                    {tenant.organizationCount} {t.tenants.orgCountSuffix}
                   </Badge>
                   {tenant.subtitle && (
                     <Badge variant="secondary">{tenant.subtitle}</Badge>
@@ -223,7 +221,7 @@ function TenantsPageContent() {
                   {selecting === tenant.tenantId && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Utiliser ce tenant
+                  {t.tenants.useCta}
                 </Button>
               </CardContent>
             </Card>

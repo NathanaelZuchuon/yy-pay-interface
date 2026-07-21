@@ -1,3 +1,4 @@
+import type { Messages } from "@/i18n/messages/fr";
 import { bffPostEnvelope } from "@/lib/bff-client";
 
 type LoginChallengeData = {
@@ -14,6 +15,7 @@ export type LoginFlowResult =
 export async function performLogin(
   principal: string,
   password: string,
+  t: Messages,
 ): Promise<LoginFlowResult> {
   const result = await bffPostEnvelope<LoginChallengeData>("/api/auth/login", {
     principal,
@@ -27,7 +29,7 @@ export async function performLogin(
 
   const mfaToken = data?.mfaToken;
   if (!mfaToken) {
-    throw new Error("Réponse de connexion invalide");
+    throw new Error(t.auth.invalidLoginResponse);
   }
 
   return { kind: "mfa_required", mfaToken };

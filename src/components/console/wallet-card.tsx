@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConsoleData } from "@/components/console/console-data-provider";
+import { useLocale } from "@/i18n/locale-provider";
+import { toIntlTag } from "@/i18n/format";
 import { bffPost } from "@/lib/bff-client";
 import { RECHARGE_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
 import { formatMycoolpayLabel } from "@/lib/wallet-labels";
@@ -40,6 +42,7 @@ function createRechargeIdempotencyKey(walletId: string) {
 export function WalletCard() {
   const { user, sessionContext, wallet, walletLoading, setWallet } =
     useConsoleData();
+  const { t, locale } = useLocale();
   const loading = walletLoading;
   const [creating, setCreating] = useState(false);
   const [recharging, setRecharging] = useState(false);
@@ -53,7 +56,7 @@ export function WalletCard() {
     const trimmedName = walletName.trim();
     if (!actorId) return;
     if (!trimmedName) {
-      toast.error("Donnez un nom à votre wallet");
+      toast.error(t.wallet.nameRequired);
       return;
     }
 
@@ -66,11 +69,9 @@ export function WalletCard() {
       setWallet(created);
       setCreateDialogOpen(false);
       setWalletName("");
-      toast.success("Wallet créé avec succès");
+      toast.success(t.wallet.created);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Création du wallet impossible",
-      );
+      toast.error(error instanceof Error ? error.message : t.wallet.createError);
     } finally {
       setCreating(false);
     }
@@ -80,7 +81,7 @@ export function WalletCard() {
     if (!wallet?.id) return;
     const amount = Number(rechargeAmount);
     if (!amount || amount <= 0) {
-      toast.error("Montant invalide");
+      toast.error(t.wallet.invalidAmount);
       return;
     }
     setRecharging(true);
@@ -107,18 +108,17 @@ export function WalletCard() {
         return;
       }
 
-      toast.error("URL de redirection MYCOOLPAY indisponible");
+      toast.error(t.wallet.mycoolpayRedirectMissing);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Recharge impossible",
-      );
+      toast.error(error instanceof Error ? error.message : t.wallet.rechargeError);
     } finally {
       setRecharging(false);
     }
   }
 
-  const walletLabel = wallet?.ownerName?.trim() || "Mon wallet";
+  const walletLabel = wallet?.ownerName?.trim() || t.wallet.defaultName;
   const mycoolpayLabel = formatMycoolpayLabel(wallet?.ownerName);
+  const intlTag = toIntlTag(locale);
 
   if (loading) {
     return <Skeleton className="yypay:h-40 yypay:w-full" />;
@@ -132,25 +132,24 @@ export function WalletCard() {
             <Wallet className="yypay:h-5 yypay:w-5 yypay:text-primary" />
             {walletLabel}
           </CardTitle>
-          <CardDescription>Solde et opérations</CardDescription>
+          <CardDescription>{t.wallet.balanceAndOperations}</CardDescription>
         </div>
         {wallet && (
           <Dialog open={rechargeDialogOpen} onOpenChange={setRechargeDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="icon" variant="outline" aria-label="Recharger">
+              <Button size="icon" variant="outline" aria-label={t.wallet.recharge}>
                 <Plus className="yypay:h-4 yypay:w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Recharger {walletLabel}</DialogTitle>
+                <DialogTitle>{t.wallet.rechargeTitle(walletLabel)}</DialogTitle>
                 <DialogDescription>
-                  Paiement sécurisé via MYCOOLPAY. Le solde sera crédité après
-                  confirmation du fournisseur.
+                  {t.wallet.rechargeDescription}
                 </DialogDescription>
               </DialogHeader>
               <div className="yypay:space-y-3">
-                <Label htmlFor="amount">Montant (XAF)</Label>
+                <Label htmlFor="amount">{t.wallet.amountLabel}</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -165,7 +164,7 @@ export function WalletCard() {
                   {recharging && (
                     <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                   )}
-                  Recharger via {mycoolpayLabel}
+                  {t.wallet.rechargeVia(mycoolpayLabel)}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -176,28 +175,26 @@ export function WalletCard() {
         {!wallet ? (
           <div className="yypay:space-y-6">
             <p className="yypay:text-sm yypay:text-secondary">
-              Vous n&apos;avez pas encore de wallet. Donnez-lui un nom pour le
-              retrouver dans vos transactions et paiements MYCOOLPAY.
+              {t.wallet.emptyState}
             </p>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button>Créer mon wallet</Button>
+                <Button>{t.wallet.createWallet}</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Créer un wallet</DialogTitle>
+                  <DialogTitle>{t.wallet.createTitle}</DialogTitle>
                   <DialogDescription>
-                    Choisissez un nom pour identifier ce wallet dans l&apos;historique
-                    et sur MYCOOLPAY.
+                    {t.wallet.createDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="yypay:space-y-3">
-                  <Label htmlFor="wallet-name">Nom du wallet</Label>
+                  <Label htmlFor="wallet-name">{t.wallet.nameLabel}</Label>
                   <Input
                     id="wallet-name"
                     value={walletName}
                     onChange={(e) => setWalletName(e.target.value)}
-                    placeholder="Ex. Wallet principal"
+                    placeholder={t.wallet.namePlaceholder}
                     maxLength={80}
                   />
                 </div>
@@ -206,7 +203,7 @@ export function WalletCard() {
                     {creating && (
                       <Loader2 className="yypay:h-4 yypay:w-4 yypay:animate-spin" />
                     )}
-                    Créer mon wallet
+                    {t.wallet.createWallet}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -215,12 +212,12 @@ export function WalletCard() {
         ) : (
           <div>
             <p className="yypay:text-3xl yypay:font-bold yypay:text-foreground">
-              {wallet.balance?.toLocaleString("fr-FR") ?? 0}
+              {wallet.balance?.toLocaleString(intlTag) ?? 0}
             </p>
             <p className="yypay:mt-2 yypay:text-sm yypay:text-secondary">
-              Dernière mise à jour :{" "}
+              {t.wallet.lastUpdated}{" "}
               {wallet.updatedAt
-                ? new Date(wallet.updatedAt).toLocaleString("fr-FR")
+                ? new Date(wallet.updatedAt).toLocaleString(intlTag)
                 : "-"}
             </p>
           </div>

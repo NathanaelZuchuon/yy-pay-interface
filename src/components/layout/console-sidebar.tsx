@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "@/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import {
   Building2,
@@ -16,25 +17,26 @@ type ConsoleSidebarProps = {
   className?: string;
 };
 
-const sections = [
-  { href: "/console", label: "Vue d'ensemble", icon: LayoutDashboard },
-  { href: "/console/transactions", label: "Transactions", icon: Receipt },
-  { href: "/console/plans", label: "Plans disponibles", icon: Tag },
-];
-
-const account = [
-  { href: "/organizations", label: "Changer d'organisation", icon: Building2 },
-  { href: "/tenants", label: "Changer de tenant", icon: Server },
-];
-
 export function ConsoleSidebar({ onNavigate, className }: ConsoleSidebarProps) {
   const pathname = usePathname();
+  const { t } = useLocale();
+
+  const sections = [
+    { href: "/console", label: t.sidebar.overview, icon: LayoutDashboard },
+    { href: "/console/transactions", label: t.sidebar.transactions, icon: Receipt },
+    { href: "/console/plans", label: t.sidebar.plans, icon: Tag },
+  ];
+
+  const account = [
+    { href: "/organizations", label: t.sidebar.switchOrganization, icon: Building2 },
+    { href: "/tenants", label: t.sidebar.switchTenant, icon: Server },
+  ];
 
   return (
     <nav className={cn("yypay:flex yypay:h-full yypay:flex-col yypay:gap-6", className)}>
       <div>
         <p className="yypay:mb-2 yypay:px-3 yypay:text-xs yypay:font-semibold yypay:uppercase yypay:tracking-wide yypay:text-muted-foreground">
-          Navigation
+          {t.sidebar.navigation}
         </p>
         <ul className="yypay:space-y-1">
           {sections.map(({ href, label, icon: Icon }) => {
