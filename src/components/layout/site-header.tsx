@@ -64,17 +64,9 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
 
           <div className="yypay:hidden yypay:items-center yypay:gap-2 md:yypay:flex">
             {showLogin && (
-              <>
-                <Link
-                  href="/login"
-                  className="yypay:text-sm yypay:font-medium yypay:text-muted-foreground hover:yypay:text-foreground"
-                >
-                  {t.siteHeader.login}
-                </Link>
-                <Button asChild size="sm">
-                  <Link href="/login">{t.siteHeader.signup}</Link>
-                </Button>
-              </>
+              <Button asChild size="sm">
+                <Link href="/login">{t.siteHeader.login}</Link>
+              </Button>
             )}
           </div>
 
@@ -131,18 +123,6 @@ export function SiteHeader({ showLogin = true }: SiteHeaderProps) {
                       )}
                     >
                       {t.siteHeader.login}
-                    </Link>
-                    <Link
-                      href="/login"
-                      onClick={() => setOpen(false)}
-                      className={cn(
-                        "yypay:inline-flex yypay:h-11 yypay:items-center yypay:justify-center",
-                        "yypay:rounded-lg yypay:border yypay:border-border yypay:px-4",
-                        "yypay:text-sm yypay:font-medium yypay:text-foreground",
-                        "hover:yypay:bg-muted",
-                      )}
-                    >
-                      {t.siteHeader.signup}
                     </Link>
                   </>
                 )}

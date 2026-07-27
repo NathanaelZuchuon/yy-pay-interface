@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { useLocale } from "@/i18n/locale-provider";
 import {
     organizationsPath as buildOrganizationsPath,
@@ -121,46 +121,37 @@ function LoginPageContent() {
       <main className="yypay:flex yypay:flex-1 yypay:items-center yypay:justify-center yypay:px-4 yypay:py-10">
         <Card className="yypay:w-full yypay:max-w-lg yypay:shadow-md">
           <CardHeader className="yypay:pb-2">
-            <Tabs value="login">
-              <TabsList className="yypay:grid yypay:w-full yypay:grid-cols-2">
-                <TabsTrigger value="login">{t.login.tabLogin}</TabsTrigger>
-                <TabsTrigger value="signup" disabled>
-                  {t.login.tabSignup}
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="login" className="yypay:mt-6">
-                {step === "credentials" ? (
-                  <>
-                    <CardTitle className="yypay:text-2xl">{t.login.welcomeBackTitle}</CardTitle>
-                    <CardDescription>
-                      {t.login.welcomeBackDescription}
-                    </CardDescription>
-                  </>
-                ) : (
-                  <>
-                    <CardTitle className="yypay:text-2xl">
-                      {t.login.mfaTitle}
-                    </CardTitle>
-                    <CardDescription>
-                      {t.login.mfaDescription}
-                    </CardDescription>
-                  </>
-                )}
-              </TabsContent>
-            </Tabs>
+            {step === "credentials" ? (
+              <>
+                <CardTitle className="yypay:text-2xl">{t.login.welcomeBackTitle}</CardTitle>
+                <CardDescription>
+                  {t.login.welcomeBackDescription}
+                </CardDescription>
+              </>
+            ) : (
+              <>
+                <CardTitle className="yypay:text-2xl">
+                  {t.login.mfaTitle}
+                </CardTitle>
+                <CardDescription>
+                  {t.login.mfaDescription}
+                </CardDescription>
+              </>
+            )}
           </CardHeader>
           <CardContent>
             {step === "credentials" ? (
               <form onSubmit={handleLogin} className="yypay:space-y-4">
                 <div className="yypay:space-y-2">
-                  <Label htmlFor="email">{t.login.emailLabel}</Label>
+                  <Label htmlFor="identifier">{t.login.emailLabel}</Label>
                   <Input
-                    id="email"
-                    type="email"
+                    id="identifier"
+                    type="text"
                     placeholder={t.login.emailPlaceholder}
                     value={principal}
                     onChange={(e) => setPrincipal(e.target.value)}
                     required
+                    autoComplete="username"
                   />
                 </div>
                 <div className="yypay:space-y-2">
