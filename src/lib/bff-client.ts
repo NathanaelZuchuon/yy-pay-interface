@@ -16,11 +16,30 @@ export class BffError extends Error {
   }
 }
 
+function resolveBffPath(path: string): string {
+  if (typeof window === "undefined") {
+    return path;
+  }
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  const envBasePath = process.env.NEXT_PUBLIC_BASE_PATH?.trim();
+  const subpathMatch = window.location.pathname.match(/^\/([^\/]+)/);
+  const currentSubpath = subpathMatch ? `/${subpathMatch[1]}` : "";
+  const basePath = envBasePath || (currentSubpath === "/pay" ? "/pay" : "");
+
+  if (basePath && path.startsWith("/") && !path.startsWith(basePath)) {
+    return `${basePath.replace(/\/$/, "")}${path}`;
+  }
+  return path;
+}
+
 export async function bffFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const resolvedPath = resolveBffPath(path);
+  const response = await fetch(resolvedPath, {
     ...init,
     credentials: "include",
     headers: {
@@ -69,7 +88,8 @@ export async function bffPostEnvelope<T>(
   path: string,
   payload?: unknown,
 ): Promise<{ success?: boolean; data?: T; message?: string; errorCode?: string }> {
-  const response = await fetch(path, {
+  const resolvedPath = resolveBffPath(path);
+  const response = await fetch(resolvedPath, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
