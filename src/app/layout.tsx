@@ -9,9 +9,13 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "YowYob Payment",
+  title: {
+    default: "YowYob Payment",
+    template: "%s · YowYob Payment",
+  },
   description:
-    "Plateforme de paiement et abonnements IWM - wallet, transactions et services",
+    "Gérez votre wallet, vos paiements et vos abonnements YowYob en toute sécurité.",
+  applicationName: "YowYob Payment",
 };
 
 export default function RootLayout({

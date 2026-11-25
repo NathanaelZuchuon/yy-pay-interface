@@ -1,5 +1,6 @@
 "use client";
 
+import { AppFooter } from "@/components/layout/app-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,7 @@ import {
     tenantsPath as buildTenantsPath,
     hardNavigate,
 } from "@/lib/auth-wizard-navigation";
-import { bffPostEnvelope } from "@/lib/bff-client";
+import { BffError, bffPostEnvelope } from "@/lib/bff-client";
 import { useAuthWizardStore } from "@/stores/auth-wizard-store";
 import type { components } from "@/types/schemas-auth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -92,6 +93,10 @@ function LoginPageContent() {
       toast.success(t.login.credentialsValidated);
       hardNavigate(tenantsPath());
     } catch (error) {
+      if (error instanceof BffError && error.errorCode === "AUTH_INVALID_CREDENTIALS") {
+        toast.error(t.login.invalidCredentials);
+        return;
+      }
       toast.error(error instanceof Error ? error.message : t.login.loginFailed);
     } finally {
       setLoading(false);
@@ -225,13 +230,14 @@ function LoginPageContent() {
               {t.login.delegatedAuthNote}
             </p>
             <p className="yypay:mt-2 yypay:text-center yypay:text-xs yypay:text-primary">
-              <Link href="/" className="hover:yypay:text-primary">
+              <Link href="/" className="yypay:hover:text-primary">
                 {t.login.backHome}
               </Link>
             </p>
           </CardContent>
         </Card>
       </main>
+      <AppFooter className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:px-4 yypay:sm:px-6" />
     </div>
   );
 }

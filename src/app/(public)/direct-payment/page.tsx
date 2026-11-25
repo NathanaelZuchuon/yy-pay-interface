@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND_NAME, BrandMark } from "@/components/brand/brand-logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import { useLocale } from "@/i18n/locale-provider";
 import { bffFetch } from "@/lib/bff-client";
 import { DIRECT_PAYMENT_SESSION_STORAGE_KEY } from "@/lib/bundle-constants";
 import type { DirectPaymentSession } from "@/lib/direct-payment";
-import { CreditCard, Loader2, ShoppingBag } from "lucide-react";
+import { Loader2, ShoppingBag } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -146,14 +147,12 @@ function DirectPaymentContent() {
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
-      <header className="yypay:border-b yypay:border-border yypay:bg-card yypay:px-4 yypay:py-4 sm:yypay:px-6">
+      <header className="yypay:border-b yypay:border-border yypay:bg-card yypay:px-4 yypay:py-4 yypay:sm:px-6">
         <div className="yypay:mx-auto yypay:flex yypay:max-w-lg yypay:items-center yypay:gap-3">
-          <span className="yypay:flex yypay:h-10 yypay:w-10 yypay:items-center yypay:justify-center yypay:rounded-lg yypay:bg-primary yypay:text-primary-foreground">
-            <CreditCard className="yypay:h-5 yypay:w-5" />
-          </span>
+          <BrandMark size="lg" />
           <div>
             <p className="yypay:text-sm yypay:font-medium yypay:text-muted-foreground">
-              YowYob Payment
+              {BRAND_NAME}
             </p>
             <h1 className="yypay:text-lg yypay:font-semibold yypay:text-foreground">
               {t.directPayment.brandTitle}
@@ -162,7 +161,7 @@ function DirectPaymentContent() {
         </div>
       </header>
 
-      <main className="yypay:mx-auto yypay:w-full yypay:max-w-lg yypay:flex-1 yypay:px-4 yypay:py-8 sm:yypay:px-6">
+      <main className="yypay:mx-auto yypay:w-full yypay:max-w-lg yypay:flex-1 yypay:px-4 yypay:py-8 yypay:sm:px-6">
         {loading && (
           <div className="yypay:space-y-4">
             <Skeleton className="yypay:h-8 yypay:w-2/3" />

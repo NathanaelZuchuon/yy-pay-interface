@@ -22,12 +22,14 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConsoleData } from "@/components/console/console-data-provider";
 import { useLocale } from "@/i18n/locale-provider";
-import { toIntlTag } from "@/i18n/format";
+import { DEFAULT_CURRENCY, formatMoney, toIntlTag } from "@/i18n/format";
 import { bffPost } from "@/lib/bff-client";
 import { RECHARGE_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
 import { formatMycoolpayLabel } from "@/lib/wallet-labels";
 import type { components as PaymentComponents } from "@/types/schemas-payment";
-import { Loader2, Plus, Wallet } from "lucide-react";
+import { ArrowRight, Loader2, Plus, Wallet } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,17 +41,33 @@ function createRechargeIdempotencyKey(walletId: string) {
   return `wallet-${walletId}-recharge-${crypto.randomUUID()}`;
 }
 
-export function WalletCard() {
-  const { user, sessionContext, wallet, walletLoading, setWallet } =
-    useConsoleData();
+export function WalletCard({ className }: { className?: string }) {
+  const {
+    user,
+    sessionContext,
+    wallet,
+    walletLoading,
+    setWallet,
+    walletDialog,
+    setWalletDialog,
+  } = useConsoleData();
   const { t, locale } = useLocale();
   const loading = walletLoading;
   const [creating, setCreating] = useState(false);
   const [recharging, setRecharging] = useState(false);
   const [walletName, setWalletName] = useState("");
   const [rechargeAmount, setRechargeAmount] = useState("");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false);
+  // État des dialogues partagé via le contexte : le FAB de la sidebar peut les ouvrir.
+  const createDialogOpen = walletDialog === "create";
+  const rechargeDialogOpen = walletDialog === "recharge";
+
+  function setCreateDialogOpen(open: boolean) {
+    setWalletDialog(open ? "create" : null);
+  }
+
+  function setRechargeDialogOpen(open: boolean) {
+    setWalletDialog(open ? "recharge" : null);
+  }
 
   async function handleCreateWallet() {
     const actorId = sessionContext?.actorId ?? user?.actorId;
@@ -121,11 +139,11 @@ export function WalletCard() {
   const intlTag = toIntlTag(locale);
 
   if (loading) {
-    return <Skeleton className="yypay:h-40 yypay:w-full" />;
+    return <Skeleton className={cn("yypay:h-56 yypay:w-full yypay:rounded-xl", className)} />;
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="yypay:flex yypay:flex-row yypay:items-start yypay:justify-between yypay:space-y-0">
         <div>
           <CardTitle className="yypay:flex yypay:items-center yypay:gap-2">
@@ -137,8 +155,9 @@ export function WalletCard() {
         {wallet && (
           <Dialog open={rechargeDialogOpen} onOpenChange={setRechargeDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="icon" variant="outline" aria-label={t.wallet.recharge}>
-                <Plus className="yypay:h-4 yypay:w-4" />
+              <Button size="sm">
+                <Plus className="yypay:h-4 yypay:w-4" aria-hidden />
+                {t.wallet.recharge}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -211,15 +230,30 @@ export function WalletCard() {
           </div>
         ) : (
           <div>
-            <p className="yypay:text-3xl yypay:font-bold yypay:text-foreground">
-              {wallet.balance?.toLocaleString(intlTag) ?? 0}
+            <p className="yypay:text-xs yypay:font-medium yypay:uppercase yypay:tracking-wide yypay:text-muted-foreground">
+              {t.dashboard.balanceTitle}
             </p>
-            <p className="yypay:mt-2 yypay:text-sm yypay:text-secondary">
-              {t.wallet.lastUpdated}{" "}
-              {wallet.updatedAt
-                ? new Date(wallet.updatedAt).toLocaleString(intlTag)
-                : "-"}
+            <p className="yypay:mt-1 yypay:text-4xl yypay:font-bold yypay:tracking-tight yypay:text-foreground yypay:tabular-nums">
+              {formatMoney(wallet.balance, DEFAULT_CURRENCY, intlTag)}
             </p>
+            <div className="yypay:mt-4 yypay:flex yypay:flex-wrap yypay:items-center yypay:justify-between yypay:gap-3">
+              <p className="yypay:text-sm yypay:text-secondary">
+                {t.wallet.lastUpdated}{" "}
+                {wallet.updatedAt
+                  ? new Date(wallet.updatedAt).toLocaleString(intlTag, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : "-"}
+              </p>
+              <Link
+                href="/console/transactions"
+                className="yypay:inline-flex yypay:items-center yypay:gap-1 yypay:text-sm yypay:font-medium yypay:text-primary yypay:hover:underline"
+              >
+                {t.dashboard.history}
+                <ArrowRight className="yypay:h-4 yypay:w-4" aria-hidden />
+              </Link>
+            </div>
           </div>
         )}
       </CardContent>

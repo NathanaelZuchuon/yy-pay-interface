@@ -1,5 +1,6 @@
 "use client";
 
+import { AppFooter } from "@/components/layout/app-footer";
 import { ConsoleHeader } from "@/components/layout/console-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -158,10 +159,10 @@ function TenantsPageContent() {
 
   return (
     <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
-      <ConsoleHeader title={t.tenants.headerTitle} />
-      <main className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:px-4 yypay:py-8 sm:yypay:px-6">
+      <ConsoleHeader />
+      <main className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:px-4 yypay:py-8 yypay:sm:px-6">
         <div className="yypay:mb-8">
-          <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground sm:yypay:text-3xl">
+          <h1 className="yypay:text-2xl yypay:font-bold yypay:text-foreground yypay:sm:text-3xl">
             {t.tenants.title}
           </h1>
           <p className="yypay:mt-2 yypay:text-muted-foreground">
@@ -171,7 +172,7 @@ function TenantsPageContent() {
         </div>
 
         {loading && (
-          <div className="yypay:grid yypay:grid-cols-1 yypay:gap-4 md:yypay:grid-cols-2 lg:yypay:grid-cols-3">
+          <div className="yypay:grid yypay:grid-cols-1 yypay:gap-4 yypay:md:grid-cols-2 yypay:lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <Skeleton key={index} className="yypay:h-40" />
             ))}
@@ -189,7 +190,7 @@ function TenantsPageContent() {
           </Card>
         )}
 
-        <div className="yypay:grid yypay:grid-cols-1 yypay:gap-4 md:yypay:grid-cols-2 lg:yypay:grid-cols-3">
+        <div className="yypay:grid yypay:grid-cols-1 yypay:gap-4 yypay:md:grid-cols-2 yypay:lg:grid-cols-3">
           {tenants.map((tenant) => (
             <Card key={tenant.tenantId} className="yypay:flex yypay:flex-col">
               <CardHeader>
@@ -228,6 +229,7 @@ function TenantsPageContent() {
           ))}
         </div>
       </main>
+      <AppFooter className="yypay:mx-auto yypay:w-full yypay:max-w-6xl yypay:px-4 yypay:sm:px-6" />
     </div>
   );
 }

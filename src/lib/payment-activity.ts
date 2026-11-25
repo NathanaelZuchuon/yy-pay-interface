@@ -276,3 +276,42 @@ export function fromServiceBundleOrder(
 export function unwrapApiList<T>(payload: { data?: T[] } | undefined): T[] {
   return Array.isArray(payload?.data) ? payload.data : [];
 }
+
+export function formatActivityDate(
+  createdAt: string | undefined,
+  intlTag: string,
+): { date: string; time: string } {
+  if (!createdAt) {
+    return { date: "-", time: "" };
+  }
+  const parsed = new Date(createdAt);
+  if (Number.isNaN(parsed.getTime())) {
+    return { date: "-", time: "" };
+  }
+  return {
+    date: parsed.toLocaleDateString(intlTag, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    time: parsed.toLocaleTimeString(intlTag, {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+}
+
+export function countActivityByStatus(
+  items: PaymentActivityItem[],
+): Record<ActivityStatusGroup, number> {
+  const counts: Record<ActivityStatusGroup, number> = {
+    success: 0,
+    pending: 0,
+    failed: 0,
+    other: 0,
+  };
+  for (const item of items) {
+    counts[getActivityStatusGroup(item.status)] += 1;
+  }
+  return counts;
+}

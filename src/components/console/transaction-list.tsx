@@ -15,28 +15,22 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
+import { ACTIVITY_SOURCE_ICONS as SOURCE_ICONS } from "@/components/console/activity-icons";
+import { usePaymentActivity } from "@/hooks/use-payment-activity";
 import { toIntlTag } from "@/i18n/format";
 import { useLocale } from "@/i18n/locale-provider";
-import { bffGet } from "@/lib/bff-client";
 import {
+    countActivityByStatus,
     formatActivityAmount,
+    formatActivityDate,
     formatActivityStatusLabel,
     formatActivityType,
     getActivityStatusGroup,
     getActivityStatusVariant,
     type ActivityStatusGroup,
-    type PaymentActivityItem,
-    type PaymentActivitySource,
 } from "@/lib/payment-activity";
-import {
-    ArrowDownToLine,
-    CreditCard,
-    Package,
-    Search,
-    Tag,
-    Wallet,
-    type LucideIcon,
-} from "lucide-react";
+import { Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -47,73 +41,47 @@ type TransactionListProps = {
 
 type StatusFilter = "all" | ActivityStatusGroup;
 
-const SOURCE_ICONS: Record<PaymentActivitySource, LucideIcon> = {
-  wallet: Wallet,
-  recharge_order: ArrowDownToLine,
-  payment_order: CreditCard,
-  plan_order: Tag,
-  bundle_order: Package,
-};
+const URL_STATUS_FILTERS = new Set<string>(["success", "pending", "failed"]);
 
-function formatActivityDate(createdAt: string | undefined, intlTag: string) {
-  if (!createdAt) {
-    return { date: "-", time: "" };
-  }
-  const parsed = new Date(createdAt);
-  if (Number.isNaN(parsed.getTime())) {
-    return { date: "-", time: "" };
-  }
-  return {
-    date: parsed.toLocaleDateString(intlTag, {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }),
-    time: parsed.toLocaleTimeString(intlTag, {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  };
+function parseStatusFilter(value: string | null): StatusFilter {
+  return value && URL_STATUS_FILTERS.has(value)
+    ? (value as StatusFilter)
+    : "all";
 }
 
 export function TransactionList({ walletId, walletName }: TransactionListProps) {
   const { t, locale } = useLocale();
   const intlTag = toIntlTag(locale);
-  const [activity, setActivity] = useState<PaymentActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const { activity, loading, error } = usePaymentActivity(walletId);
+  // Le filtre de statut vit dans l'URL (?status=) pour être partagé avec
+  // les « filtres rapides » de la sidebar.
+  const searchParams = useSearchParams();
+  const statusFilter = parseStatusFilter(searchParams.get("status"));
+
+  function setStatusFilter(next: StatusFilter) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", next);
+    }
+    const query = params.toString();
+    globalThis.history.replaceState(
+      null,
+      "",
+      query ? `?${query}` : globalThis.location.pathname,
+    );
+  }
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    async function load() {
-      if (!walletId) {
-        setActivity([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const data = await bffGet<PaymentActivityItem[]>(
-          `/api/payments/activity?walletId=${walletId}&limit=100`,
-        );
-        setActivity(Array.isArray(data) ? data : []);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : t.transactionList.loadError);
-      } finally {
-        setLoading(false);
-      }
+    if (error) {
+      toast.error(error || t.transactionList.loadError);
     }
-    void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletId]);
+  }, [error]);
 
-  const stats = useMemo(() => {
-    const counts = { success: 0, pending: 0, failed: 0, other: 0 };
-    for (const item of activity) {
-      counts[getActivityStatusGroup(item.status)] += 1;
-    }
-    return counts;
-  }, [activity]);
+  const stats = useMemo(() => countActivityByStatus(activity), [activity]);
 
   const normalizedSearch = search.trim().toLowerCase();
 
@@ -177,7 +145,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
 
   return (
     <div className="yypay:space-y-6">
-      <div className="yypay:grid yypay:grid-cols-2 yypay:gap-3 sm:yypay:grid-cols-4">
+      <div className="yypay:grid yypay:grid-cols-2 yypay:gap-3 yypay:sm:grid-cols-4">
         <Card>
           <CardContent className="yypay:p-4">
             <p className="yypay:text-xs yypay:font-medium yypay:text-muted-foreground">
@@ -193,7 +161,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
             <p className="yypay:text-xs yypay:font-medium yypay:text-muted-foreground">
               {t.transactionList.stats.success}
             </p>
-            <p className="yypay:mt-1 yypay:text-2xl yypay:font-bold yypay:text-emerald-600 dark:yypay:text-emerald-400">
+            <p className="yypay:mt-1 yypay:text-2xl yypay:font-bold yypay:text-emerald-600 yypay:dark:text-emerald-400">
               {stats.success}
             </p>
           </CardContent>
@@ -213,7 +181,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
             <p className="yypay:text-xs yypay:font-medium yypay:text-muted-foreground">
               {t.transactionList.stats.failed}
             </p>
-            <p className="yypay:mt-1 yypay:text-2xl yypay:font-bold yypay:text-rose-600 dark:yypay:text-rose-400">
+            <p className="yypay:mt-1 yypay:text-2xl yypay:font-bold yypay:text-rose-600 yypay:dark:text-rose-400">
               {stats.failed}
             </p>
           </CardContent>
@@ -229,13 +197,13 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
             </CardDescription>
           </div>
 
-          <div className="yypay:flex yypay:flex-col yypay:gap-3 sm:yypay:flex-row sm:yypay:items-center sm:yypay:justify-between">
+          <div className="yypay:flex yypay:flex-col yypay:gap-3 yypay:sm:flex-row yypay:sm:items-center yypay:sm:justify-between">
             <Tabs
               value={statusFilter}
               onValueChange={(value) => setStatusFilter(value as StatusFilter)}
               className="yypay:gap-0"
             >
-              <TabsList className="yypay:w-full sm:yypay:w-auto">
+              <TabsList className="yypay:w-full yypay:sm:w-auto">
                 {statusTabs.map((tab) => (
                   <TabsTrigger key={tab.value} value={tab.value}>
                     {tab.label}
@@ -244,7 +212,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
               </TabsList>
             </Tabs>
 
-            <div className="yypay:relative sm:yypay:w-64">
+            <div className="yypay:relative yypay:sm:w-64">
               <Search className="yypay:pointer-events-none yypay:absolute yypay:left-3 yypay:top-1/2 yypay:h-4 yypay:w-4 yypay:-translate-y-1/2 yypay:text-muted-foreground" />
               <Input
                 value={search}
@@ -269,7 +237,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="yypay:text-sm yypay:font-medium yypay:text-primary hover:yypay:underline"
+                  className="yypay:text-sm yypay:font-medium yypay:text-primary yypay:hover:underline"
                 >
                   {t.transactionList.resetFilters}
                 </button>
@@ -277,7 +245,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
             </div>
           ) : (
             <>
-              <div className="yypay:hidden yypay:overflow-x-auto md:yypay:block">
+              <div className="yypay:hidden yypay:overflow-x-auto yypay:md:block">
                 <table className="yypay:w-full yypay:text-left yypay:text-sm">
                   <thead>
                     <tr className="yypay:border-b yypay:border-border yypay:text-secondary">
@@ -295,7 +263,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
                       return (
                         <tr
                           key={item.id}
-                          className="yypay:border-b yypay:border-border/60 hover:yypay:bg-muted/40"
+                          className="yypay:border-b yypay:border-border/60 yypay:hover:bg-muted/40"
                         >
                           <td className="yypay:py-3 yypay:pr-4">
                             <div className="yypay:flex yypay:items-center yypay:gap-2 yypay:font-medium yypay:text-foreground">
@@ -326,7 +294,7 @@ export function TransactionList({ walletId, walletName }: TransactionListProps) 
                   </tbody>
                 </table>
               </div>
-              <div className="yypay:space-y-3 md:yypay:hidden">
+              <div className="yypay:space-y-3 yypay:md:hidden">
                 {filteredActivity.map((item) => {
                   const Icon = SOURCE_ICONS[item.source];
                   const { date, time } = formatActivityDate(item.createdAt, intlTag);

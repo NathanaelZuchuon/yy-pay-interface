@@ -4,12 +4,15 @@ import {
   ConsoleDataProvider,
   useConsoleData,
 } from "@/components/console/console-data-provider";
+import { AppFooter } from "@/components/layout/app-footer";
 import { ConsoleHeader } from "@/components/layout/console-header";
 import { ConsoleSidebar } from "@/components/layout/console-sidebar";
 import {
   OnboardingProvider,
   useOnboarding,
 } from "@/components/onboarding/onboarding-tour";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useIsDesktop, useSidebarCollapsed } from "@/hooks/use-sidebar-layout";
 import { useLocale } from "@/i18n/locale-provider";
 import { bffPost } from "@/lib/bff-client";
 import {
@@ -18,9 +21,17 @@ import {
   RECHARGE_ORDER_STORAGE_KEY,
 } from "@/lib/bundle-constants";
 import { parsePaymentReturn } from "@/lib/payment-callback";
+import { cn } from "@/lib/utils";
 import type { components } from "@/types/schemas-payment";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 
 type CommercialPlanOrderResponse =
@@ -209,34 +220,135 @@ function PaymentReturnHandler() {
   return null;
 }
 
+const SIDEBAR_ID = "console-sidebar";
+const PEEK_DELAY_MS = 150;
+
 function ConsoleChrome({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
   const { wallet, bumpRefresh } = useConsoleData();
   const { restart } = useOnboarding();
   const { t } = useLocale();
-  const pageTitles: Record<string, string> = {
-    "/console": t.sidebar.overview,
-    "/console/transactions": t.sidebar.transactions,
-    "/console/plans": t.sidebar.plans,
-  };
-  const title = pageTitles[pathname] ?? "Console";
+  const [collapsed, setCollapsed] = useSidebarCollapsed();
+  const isDesktop = useIsDesktop();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [peek, setPeek] = useState(false);
+  const peekTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Mini-sidebar affichée seulement si réduite ET non survolée.
+  const mini = collapsed && !peek;
+
+  function cancelPeekTimer() {
+    if (peekTimer.current) {
+      clearTimeout(peekTimer.current);
+      peekTimer.current = undefined;
+    }
+  }
+
+  function handleMenuClick() {
+    if (isDesktop) {
+      cancelPeekTimer();
+      setPeek(false);
+      setCollapsed(!collapsed);
+    } else {
+      setDrawerOpen(true);
+    }
+  }
+
+  // Hover-to-expand : la sidebar réduite se déploie en overlay, sans décaler le contenu.
+  function handleMouseEnter() {
+    if (!collapsed) return;
+    cancelPeekTimer();
+    peekTimer.current = setTimeout(() => setPeek(true), PEEK_DELAY_MS);
+  }
+
+  function handleMouseLeave() {
+    cancelPeekTimer();
+    setPeek(false);
+  }
+
+  // Même comportement pour la navigation clavier (focus visible uniquement).
+  function handleFocus(event: FocusEvent<HTMLDivElement>) {
+    if (collapsed && event.target.matches(":focus-visible")) {
+      setPeek(true);
+    }
+  }
+
+  function handleBlur(event: FocusEvent<HTMLDivElement>) {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setPeek(false);
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape" && peek) {
+      setPeek(false);
+    }
+  }
+
+  const menuLabel = isDesktop
+    ? collapsed
+      ? t.sidebar.expand
+      : t.sidebar.collapse
+    : t.header.openNav;
 
   return (
-    <div className="yypay:flex yypay:min-h-full yypay:flex-col yypay:bg-background">
+    <div className="yypay:flex yypay:min-h-screen yypay:flex-col yypay:bg-shell">
       <PaymentReturnHandler />
       <ConsoleHeader
-        title={title}
         walletName={wallet?.ownerName}
         onCheckoutComplete={bumpRefresh}
-        sidebar={<ConsoleSidebar />}
         onOpenHelp={restart}
+        onMenuClick={handleMenuClick}
+        menuLabel={menuLabel}
+        menuExpanded={isDesktop ? !collapsed : drawerOpen}
+        menuControls={SIDEBAR_ID}
       />
-      <div className="yypay:mx-auto yypay:flex yypay:w-full yypay:max-w-6xl yypay:flex-1 yypay:items-start yypay:gap-6 yypay:px-4 yypay:py-8 sm:yypay:px-6">
-        <aside className="yypay:sticky yypay:top-24 yypay:hidden yypay:w-56 yypay:shrink-0 lg:yypay:block">
-          <ConsoleSidebar />
+
+      {/* Mobile / tablette : tiroir latéral avec backdrop. */}
+      <Sheet open={drawerOpen && !isDesktop} onOpenChange={setDrawerOpen}>
+        <SheetContent
+          side="left"
+          aria-describedby={undefined}
+          className="yypay:w-72 yypay:max-w-[85vw] yypay:border-none yypay:bg-shell yypay:pt-3"
+        >
+          <SheetTitle className="yypay:sr-only">{t.header.navigationTitle}</SheetTitle>
+          <div className="yypay:flex-1 yypay:overflow-y-auto yypay:pb-6 yypay:pt-10">
+            <ConsoleSidebar onNavigate={() => setDrawerOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <div className="yypay:flex yypay:flex-1">
+        {/* Desktop : la largeur réservée ne change qu'au clic sur ☰, jamais au survol. */}
+        <aside
+          id={SIDEBAR_ID}
+          className={cn(
+            "yypay:relative yypay:z-30 yypay:hidden yypay:shrink-0 yypay:transition-[width] yypay:duration-200 yypay:ease-out yypay:lg:block",
+            collapsed ? "yypay:w-[72px]" : "yypay:w-64",
+          )}
+        >
+          <div
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className={cn(
+              "yypay:sticky yypay:top-16 yypay:h-[calc(100vh-4rem)] yypay:overflow-y-auto yypay:overflow-x-hidden yypay:bg-shell yypay:pb-4 yypay:transition-[width,box-shadow] yypay:duration-200 yypay:ease-out",
+              collapsed && !peek && "yypay:w-[72px]",
+              collapsed && peek && "yypay:w-64 yypay:rounded-r-2xl yypay:shadow-overlay",
+              !collapsed && "yypay:w-64",
+            )}
+          >
+            <ConsoleSidebar collapsed={mini} />
+          </div>
         </aside>
 
-        <main className="yypay:min-w-0 yypay:flex-1">{children}</main>
+        <main className="yypay:min-w-0 yypay:flex-1 yypay:px-2 yypay:pb-2 yypay:sm:px-4 yypay:sm:pb-4 yypay:lg:pl-0">
+          <div className="yypay:min-h-[calc(100vh-8rem)] yypay:rounded-2xl yypay:bg-shell-panel yypay:px-4 yypay:py-6 yypay:sm:px-8 yypay:sm:py-8">
+            <div className="yypay:mx-auto yypay:max-w-6xl">{children}</div>
+          </div>
+          <AppFooter className="yypay:px-4" />
+        </main>
       </div>
     </div>
   );

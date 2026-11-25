@@ -21,6 +21,8 @@ type SessionContext = {
   walletId: string | null;
 };
 
+export type WalletDialog = "create" | "recharge";
+
 type ConsoleData = {
   user: UserAccountResponse | null;
   sessionContext: SessionContext | null;
@@ -30,6 +32,9 @@ type ConsoleData = {
   refreshWallet: () => Promise<void>;
   refreshKey: number;
   bumpRefresh: () => void;
+  /** Dialogue wallet ouvert (création / recharge), pilotable depuis la sidebar. */
+  walletDialog: WalletDialog | null;
+  setWalletDialog: (dialog: WalletDialog | null) => void;
 };
 
 const ConsoleDataContext = createContext<ConsoleData | null>(null);
@@ -42,6 +47,7 @@ export function ConsoleDataProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
   const [walletLoading, setWalletLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [walletDialog, setWalletDialog] = useState<WalletDialog | null>(null);
 
   const refreshWallet = useCallback(async () => {
     setWalletLoading(true);
@@ -97,6 +103,8 @@ export function ConsoleDataProvider({ children }: { children: ReactNode }) {
         refreshWallet,
         refreshKey,
         bumpRefresh,
+        walletDialog,
+        setWalletDialog,
       }}
     >
       {children}

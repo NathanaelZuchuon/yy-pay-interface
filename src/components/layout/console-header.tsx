@@ -1,52 +1,43 @@
 "use client";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { CartSheet } from "@/components/cart/cart-sheet";
 import { LanguageToggle } from "@/components/language/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { useLocale } from "@/i18n/locale-provider";
 import { bffPost } from "@/lib/bff-client";
+import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
-import { CircleHelp, LogOut, Menu, ShoppingCart, Wallet } from "lucide-react";
+import { CircleHelp, LogOut, Menu, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 type ConsoleHeaderProps = {
-  title?: string;
   walletName?: string | null;
   onCheckoutComplete?: () => void;
-  sidebar?: ReactNode;
   onOpenHelp?: () => void;
+  /** Bouton ☰ : réduit/agrandit la sidebar (desktop) ou ouvre le tiroir (mobile). */
+  onMenuClick?: () => void;
+  menuLabel?: string;
+  menuExpanded?: boolean;
+  menuControls?: string;
 };
 
 export function ConsoleHeader({
-  title = "Console",
   walletName,
   onCheckoutComplete,
-  sidebar,
   onOpenHelp,
+  onMenuClick,
+  menuLabel,
+  menuExpanded,
+  menuControls,
 }: ConsoleHeaderProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { t } = useLocale();
   const itemCount = useCartStore((state) => state.itemCount());
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [lastPathname, setLastPathname] = useState(pathname);
-
-  if (pathname !== lastPathname) {
-    setLastPathname(pathname);
-    setSidebarOpen(false);
-  }
 
   async function handleLogout() {
     try {
@@ -59,48 +50,44 @@ export function ConsoleHeader({
   }
 
   return (
-    <header className="yypay:sticky yypay:top-0 yypay:z-40 yypay:border-b yypay:border-border yypay:bg-card/95 yypay:backdrop-blur">
-      <div className="yypay:mx-auto yypay:flex yypay:h-16 yypay:max-w-6xl yypay:items-center yypay:justify-between yypay:gap-3 yypay:px-4 sm:yypay:px-6">
+    <header
+      className={cn(
+        "yypay:sticky yypay:top-0 yypay:z-40",
+        // Avec sidebar (console) : fond « shell » continu façon Gmail ;
+        // pages autonomes (tenants, organisations) : barre classique.
+        onMenuClick
+          ? "yypay:bg-shell"
+          : "yypay:border-b yypay:border-border yypay:bg-card/95 yypay:backdrop-blur",
+      )}
+    >
+      <div
+        className={cn(
+          "yypay:flex yypay:h-16 yypay:items-center yypay:justify-between yypay:gap-3",
+          onMenuClick
+            ? "yypay:pl-2 yypay:pr-3 yypay:sm:pr-4"
+            : "yypay:mx-auto yypay:max-w-6xl yypay:px-4 yypay:sm:px-6",
+        )}
+      >
         <div className="yypay:flex yypay:min-w-0 yypay:items-center yypay:gap-1">
-          {sidebar && (
-            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="yypay:shrink-0 lg:yypay:hidden"
-                  aria-label={t.header.openNav}
-                >
-                  <Menu className="yypay:h-5 yypay:w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="yypay:w-72">
-                <SheetHeader>
-                  <SheetTitle>{t.header.navigationTitle}</SheetTitle>
-                </SheetHeader>
-                <div className="yypay:overflow-y-auto yypay:px-4 yypay:pb-6">
-                  {sidebar}
-                </div>
-              </SheetContent>
-            </Sheet>
+          {onMenuClick && (
+            <button
+              type="button"
+              onClick={onMenuClick}
+              aria-label={menuLabel ?? t.header.openNav}
+              aria-expanded={menuExpanded}
+              aria-controls={menuControls}
+              title={menuLabel}
+              className="yypay:flex yypay:h-12 yypay:w-12 yypay:shrink-0 yypay:items-center yypay:justify-center yypay:rounded-full yypay:text-nav-foreground yypay:transition-colors yypay:hover:bg-nav-hover"
+            >
+              <Menu className="yypay:h-6 yypay:w-6" aria-hidden />
+            </button>
           )}
-          <Link
-            href="/console"
-            className="yypay:flex yypay:min-w-0 yypay:items-center yypay:gap-2"
-          >
-            <span className="yypay:flex yypay:h-8 yypay:w-8 yypay:shrink-0 yypay:items-center yypay:justify-center yypay:rounded-lg yypay:bg-primary yypay:text-primary-foreground">
-              <Wallet className="yypay:h-4 yypay:w-4" />
-            </span>
-            <span className="yypay:truncate yypay:font-semibold yypay:text-foreground">
-              YowYob Payment
-            </span>
-            <span className="yypay:hidden yypay:text-muted-foreground sm:yypay:inline">
-              / {title}
-            </span>
+          <Link href="/console" className="yypay:min-w-0 yypay:rounded-lg yypay:px-1">
+            <BrandLogo size="sm" nameClassName="yypay:text-lg" />
           </Link>
         </div>
 
-        <div className="yypay:flex yypay:items-center yypay:gap-1 sm:yypay:gap-2">
+        <div className="yypay:flex yypay:items-center yypay:gap-1 yypay:sm:gap-2">
           {onOpenHelp && (
             <Button
               variant="ghost"

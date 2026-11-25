@@ -30,6 +30,22 @@ const fr = {
     account: "Compte",
     switchOrganization: "Changer d'organisation",
     switchTenant: "Changer de tenant",
+    collapse: "Réduire le menu",
+    expand: "Agrandir le menu",
+    mainMenu: "Menu principal",
+    more: "Plus",
+    less: "Moins",
+    statusFilters: "Filtres rapides",
+    statusSuccess: "Réussies",
+    statusPending: "En attente",
+    statusFailed: "Échouées",
+    rechargeWallet: "Recharger",
+    createWallet: "Créer un wallet",
+    inCart: (count: number) =>
+      `${count} plan${count > 1 ? "s" : ""} dans le panier`,
+    moreActions: (label: string) => `Plus d'actions pour « ${label} »`,
+    clearCart: "Vider le panier",
+    cartCleared: "Panier vidé",
   },
   paymentReturn: {
     genericSuccess: "Retour paiement reçu. Mise à jour en cours…",
@@ -55,7 +71,8 @@ const fr = {
   pages: {
     overview: {
       title: "Tableau de bord",
-      description: "Gérez votre wallet et consultez son solde.",
+      description:
+        "Votre solde, votre abonnement et vos dernières opérations en un coup d'œil.",
     },
     transactions: {
       title: "Transactions",
@@ -66,6 +83,45 @@ const fr = {
       title: "Plans disponibles",
       description: "Souscrivez à un plan adapté à vos besoins.",
     },
+  },
+  dashboard: {
+    balanceTitle: "Solde disponible",
+    history: "Historique",
+    subscriptionTitle: "Abonnement",
+    subscriptionActive: "Actif",
+    subscriptionExpiringSoon: "Expire bientôt",
+    subscriptionNone: "Aucun abonnement actif",
+    subscriptionNoneDescription:
+      "Choisissez un plan pour activer les services de votre organisation.",
+    subscriptionValidUntil: (date: string) => `Valable jusqu'au ${date}`,
+    subscriptionDaysLeft: (days: number) =>
+      days <= 0
+        ? "Expire aujourd'hui"
+        : `${days} jour${days > 1 ? "s" : ""} restant${days > 1 ? "s" : ""}`,
+    subscriptionError: "Impossible de charger votre abonnement.",
+    viewPlans: "Voir les plans",
+    changePlan: "Changer de plan",
+    recentTitle: "Dernières opérations",
+    recentDescription: "Les 5 opérations les plus récentes de votre wallet.",
+    recentEmpty: "Aucune opération pour le moment.",
+    recentNoWallet: "Créez un wallet pour suivre vos opérations.",
+    recentError: "Impossible de charger les dernières opérations.",
+    viewAll: "Voir tout",
+    alertsLabel: "Alertes",
+    alertPending: (count: number) =>
+      `${count} opération${count > 1 ? "s" : ""} en attente de confirmation`,
+    alertPendingHint: "Le statut se met à jour dès que le fournisseur confirme.",
+    alertFailed: (count: number) =>
+      `${count} opération${count > 1 ? "s" : ""} échouée${count > 1 ? "s" : ""} ces 30 derniers jours`,
+    alertFailedHint: "Vérifiez votre moyen de paiement ou réessayez.",
+    review: "Consulter",
+    retry: "Réessayer",
+  },
+  footer: {
+    rights: (year: number) => `© ${year} YowYob. Tous droits réservés.`,
+    support: "Support",
+    legal: "Mentions légales",
+    version: (version: string) => `Version ${version}`,
   },
   wallet: {
     nameRequired: "Donnez un nom à votre wallet",
@@ -289,7 +345,7 @@ const fr = {
       {
         title: "Une navigation qui s'adapte à vous",
         description:
-          "La barre latérale vous suit partout : repliable en un geste sur mobile, toujours visible sur desktop.",
+          "Comme dans Gmail : le bouton ☰ réduit la barre latérale en icônes, un survol la déploie, et sur mobile elle s'ouvre en tiroir.",
       },
     ],
     goToStep: (index: number) => `Aller à l'étape ${index}`,

@@ -32,6 +32,22 @@ const en: Messages = {
     account: "Account",
     switchOrganization: "Switch organization",
     switchTenant: "Switch tenant",
+    collapse: "Collapse menu",
+    expand: "Expand menu",
+    mainMenu: "Main menu",
+    more: "More",
+    less: "Less",
+    statusFilters: "Quick filters",
+    statusSuccess: "Successful",
+    statusPending: "Pending",
+    statusFailed: "Failed",
+    rechargeWallet: "Top up",
+    createWallet: "Create a wallet",
+    inCart: (count: number) =>
+      `${count} plan${count > 1 ? "s" : ""} in the cart`,
+    moreActions: (label: string) => `More actions for "${label}"`,
+    clearCart: "Clear cart",
+    cartCleared: "Cart cleared",
   },
   paymentReturn: {
     genericSuccess: "Payment return received. Updating…",
@@ -57,7 +73,7 @@ const en: Messages = {
   pages: {
     overview: {
       title: "Dashboard",
-      description: "Manage your wallet and check its balance.",
+      description: "Your balance, subscription and latest activity at a glance.",
     },
     transactions: {
       title: "Transactions",
@@ -68,6 +84,43 @@ const en: Messages = {
       title: "Available plans",
       description: "Subscribe to a plan that fits your needs.",
     },
+  },
+  dashboard: {
+    balanceTitle: "Available balance",
+    history: "History",
+    subscriptionTitle: "Subscription",
+    subscriptionActive: "Active",
+    subscriptionExpiringSoon: "Expiring soon",
+    subscriptionNone: "No active subscription",
+    subscriptionNoneDescription:
+      "Choose a plan to activate your organization's services.",
+    subscriptionValidUntil: (date: string) => `Valid until ${date}`,
+    subscriptionDaysLeft: (days: number) =>
+      days <= 0 ? "Expires today" : `${days} day${days > 1 ? "s" : ""} left`,
+    subscriptionError: "Unable to load your subscription.",
+    viewPlans: "View plans",
+    changePlan: "Change plan",
+    recentTitle: "Recent activity",
+    recentDescription: "The 5 most recent operations on your wallet.",
+    recentEmpty: "No activity yet.",
+    recentNoWallet: "Create a wallet to track your activity.",
+    recentError: "Unable to load recent activity.",
+    viewAll: "View all",
+    alertsLabel: "Alerts",
+    alertPending: (count: number) =>
+      `${count} operation${count > 1 ? "s" : ""} awaiting confirmation`,
+    alertPendingHint: "The status updates as soon as the provider confirms.",
+    alertFailed: (count: number) =>
+      `${count} failed operation${count > 1 ? "s" : ""} in the last 30 days`,
+    alertFailedHint: "Check your payment method or try again.",
+    review: "Review",
+    retry: "Retry",
+  },
+  footer: {
+    rights: (year: number) => `© ${year} YowYob. All rights reserved.`,
+    support: "Support",
+    legal: "Legal notice",
+    version: (version: string) => `Version ${version}`,
   },
   wallet: {
     nameRequired: "Give your wallet a name",
@@ -291,7 +344,7 @@ const en: Messages = {
       {
         title: "Navigation that adapts to you",
         description:
-          "The sidebar follows you everywhere: collapsible with a tap on mobile, always visible on desktop.",
+          "Just like Gmail: the ☰ button shrinks the sidebar to icons, hovering expands it, and on mobile it opens as a drawer.",
       },
     ],
     goToStep: (index: number) => `Go to step ${index}`,

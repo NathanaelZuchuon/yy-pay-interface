@@ -23,6 +23,24 @@
     0 4px 10px -6px rgb(15 23 42 / 0.06);
   --app-shadow-popular: 0 0 0 1px #1b4df5,
     0 12px 28px -8px rgb(27 77 245 / 0.22);
+
+  /* Shell console (sidebar type Gmail / Material 3) */
+  --app-shell: #f6f8fc;
+  --app-shell-panel: #ffffff;
+  --app-nav-foreground: #444746;
+  --app-nav-hover: rgb(68 71 70 / 0.08);
+  --app-nav-active: #d3e3fd;
+  --app-nav-active-foreground: #041e49;
+  --app-fab: #c2e7ff;
+  --app-fab-foreground: #001d35;
+  --app-fab-hover: #b3dcf7;
+  --app-label-success: #188038;
+  --app-label-pending: #e37400;
+  --app-label-failed: #d93025;
+  --app-shadow-fab: 0 1px 3px 0 rgb(60 64 67 / 0.3),
+    0 4px 8px 3px rgb(60 64 67 / 0.15);
+  --app-shadow-overlay: 0 4px 8px 3px rgb(60 64 67 / 0.15),
+    0 1px 3px rgb(60 64 67 / 0.3);
 }
 
 .dark {
@@ -44,6 +62,22 @@
   --app-shadow-card-hover: 0 10px 25px -5px rgb(0 0 0 / 0.45);
   --app-shadow-popular: 0 0 0 1px #1b4df5,
     0 12px 28px -8px rgb(27 77 245 / 0.35);
+
+  --app-shell: #0a0f1c;
+  --app-shell-panel: #0f172a;
+  --app-nav-foreground: #c4c7c5;
+  --app-nav-hover: rgb(227 227 227 / 0.08);
+  --app-nav-active: #004a77;
+  --app-nav-active-foreground: #c2e7ff;
+  --app-fab: #c2e7ff;
+  --app-fab-foreground: #001d35;
+  --app-fab-hover: #d3edff;
+  --app-label-success: #6dd58c;
+  --app-label-pending: #fcc934;
+  --app-label-failed: #f28b82;
+  --app-shadow-fab: 0 1px 3px 0 rgb(0 0 0 / 0.5),
+    0 4px 8px 3px rgb(0 0 0 / 0.3);
+  --app-shadow-overlay: 0 4px 12px 4px rgb(0 0 0 / 0.45);
 }
 
 @theme inline {
@@ -68,6 +102,20 @@
   --shadow-card: var(--app-shadow-card);
   --shadow-card-hover: var(--app-shadow-card-hover);
   --shadow-popular: var(--app-shadow-popular);
+  --color-shell: var(--app-shell);
+  --color-shell-panel: var(--app-shell-panel);
+  --color-nav-foreground: var(--app-nav-foreground);
+  --color-nav-hover: var(--app-nav-hover);
+  --color-nav-active: var(--app-nav-active);
+  --color-nav-active-foreground: var(--app-nav-active-foreground);
+  --color-fab: var(--app-fab);
+  --color-fab-foreground: var(--app-fab-foreground);
+  --color-fab-hover: var(--app-fab-hover);
+  --color-label-success: var(--app-label-success);
+  --color-label-pending: var(--app-label-pending);
+  --color-label-failed: var(--app-label-failed);
+  --shadow-fab: var(--app-shadow-fab);
+  --shadow-overlay: var(--app-shadow-overlay);
   --animate-onboarding-in: onboarding-in 0.25s ease-out;
 }
 
