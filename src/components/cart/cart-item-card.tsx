@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/i18n/locale-provider";
-import { getPlanLabel } from "@/lib/commercial-plan-display";
+import { formatAddOnLabel, getPlanLabel } from "@/lib/commercial-plan-display";
 import { useCartStore, type CartPlanItem } from "@/stores/cart-store";
 import { Trash2 } from "lucide-react";
 
@@ -21,7 +21,6 @@ export function CartItemCard({ item }: { item: CartPlanItem }) {
           <p className="yypay:font-medium yypay:text-foreground">
             {getPlanLabel(item.plan, t)}
           </p>
-          <p className="yypay:text-sm yypay:text-secondary">{planCode}</p>
         </div>
         <Button
           variant="ghost"
@@ -50,7 +49,7 @@ export function CartItemCard({ item }: { item: CartPlanItem }) {
                   aria-pressed={selected}
                   onClick={() => planCode && togglePlanAddOn(planCode, addOnCode)}
                 >
-                  {addOnCode}
+                  {formatAddOnLabel(addOnCode, t)}
                 </Button>
               );
             })}

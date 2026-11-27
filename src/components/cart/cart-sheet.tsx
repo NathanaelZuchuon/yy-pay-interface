@@ -21,7 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { toIntlTag } from "@/i18n/format";
+import { formatMoney, toIntlTag } from "@/i18n/format";
 import { useLocale } from "@/i18n/locale-provider";
 import { bffGet, bffPost } from "@/lib/bff-client";
 import { COMMERCIAL_PLAN_ORDER_STORAGE_KEY } from "@/lib/bundle-constants";
@@ -214,7 +214,7 @@ export function CartSheet({ trigger, walletName, onCheckoutComplete }: CartSheet
             {quoteLoading
               ? t.cart.calculatingQuote
               : quote
-                ? t.cart.totalSuffix(quoteTotal.toLocaleString(intlTag), quoteCurrency)
+                ? t.cart.totalSuffix(formatMoney(quoteTotal, quoteCurrency, intlTag))
                 : ""}
           </SheetDescription>
         </SheetHeader>

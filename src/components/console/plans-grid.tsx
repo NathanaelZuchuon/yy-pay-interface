@@ -1,7 +1,7 @@
 "use client";
 
 import { PlansPricingSection } from "@/components/plans/plans-pricing-section";
-import { useCommercialPlanQuotes } from "@/hooks/use-commercial-plan-quotes";
+import { usePlanPricing } from "@/hooks/use-plan-pricing";
 import { usePlanAutoRenewals } from "@/hooks/use-plan-auto-renewals";
 import { toIntlTag } from "@/i18n/format";
 import { useLocale } from "@/i18n/locale-provider";
@@ -39,10 +39,8 @@ export function PlansGrid({ refreshKey = 0 }: PlansGridProps) {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("MONTHLY");
   const addPlan = useCartStore((state) => state.addPlan);
   const hasPlan = useCartStore((state) => state.hasPlan);
-  const { quotes, loading: quotesLoading } = useCommercialPlanQuotes(
-    plans,
-    billingPeriod,
-  );
+  const { quotes, quotesLoading, savingsByPlan, maxSavingsPercent } =
+    usePlanPricing(plans, billingPeriod);
   const {
     renewalsByPlanCode,
     loading: autoRenewalsLoading,
@@ -124,6 +122,9 @@ export function PlansGrid({ refreshKey = 0 }: PlansGridProps) {
       quotesLoading={quotesLoading}
       billingPeriod={billingPeriod}
       onBillingPeriodChange={setBillingPeriod}
+      showHeading={false}
+      savingsByPlan={savingsByPlan}
+      maxSavingsPercent={maxSavingsPercent}
       activeSubscription={purchaseGuard.activeSubscription ?? null}
       purchaseBlockMessage={purchaseGuard.reason}
       pendingPlanCodes={pendingPlanCodes}

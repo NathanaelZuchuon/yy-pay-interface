@@ -9,10 +9,14 @@ type CommercialPlanResponse = components["schemas"]["CommercialPlanResponse"];
 type CommercialPlanQuoteResponse =
   components["schemas"]["CommercialPlanQuoteResponse"];
 
+// Constante stable : un `{}` par défaut serait recréé à chaque rendu et
+// relancerait l'effet (et donc les appels de devis) en boucle.
+const NO_ADD_ONS: Record<string, string[]> = {};
+
 export function useCommercialPlanQuotes(
   plans: CommercialPlanResponse[],
   billingPeriod: BillingPeriod,
-  addOnCodesByPlan: Record<string, string[]> = {},
+  addOnCodesByPlan: Record<string, string[]> = NO_ADD_ONS,
 ) {
   const [quotes, setQuotes] = useState<
     Record<string, CommercialPlanQuoteResponse>
@@ -48,7 +52,9 @@ export function useCommercialPlanQuotes(
       setLoading(true);
       setError(null);
 
-      void Promise.all(
+      // allSettled : un devis en échec (réseau lent, plan indisponible) ne doit
+      // pas masquer les prix des autres plans.
+      void Promise.allSettled(
         codes.map(async (code) => {
           const quote = await bffPost<CommercialPlanQuoteResponse>(
             `/api/plans/${code}/quote`,
@@ -60,20 +66,22 @@ export function useCommercialPlanQuotes(
           return [code, quote] as const;
         }),
       )
-        .then((entries) => {
-          if (!cancelled) {
-            setQuotes(Object.fromEntries(entries));
-          }
-        })
-        .catch((quoteError) => {
-          if (!cancelled) {
-            setQuotes({});
-            setError(
-              quoteError instanceof Error
-                ? quoteError.message
-                : "Impossible de charger les tarifs",
-            );
-          }
+        .then((results) => {
+          if (cancelled) return;
+          const entries = results.flatMap((result) =>
+            result.status === "fulfilled" ? [result.value] : [],
+          );
+          setQuotes(Object.fromEntries(entries));
+          const firstFailure = results.find(
+            (result): result is PromiseRejectedResult => result.status === "rejected",
+          );
+          setError(
+            firstFailure
+              ? firstFailure.reason instanceof Error
+                ? firstFailure.reason.message
+                : "Impossible de charger certains tarifs"
+              : null,
+          );
         })
         .finally(() => {
           if (!cancelled) {
@@ -86,7 +94,9 @@ export function useCommercialPlanQuotes(
       cancelled = true;
       globalThis.clearTimeout(timer);
     };
-  }, [planCodes, billingPeriod, addOnsKey, addOnCodesByPlan]);
+    // `addOnsKey` représente le contenu de addOnCodesByPlan.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planCodes, billingPeriod, addOnsKey]);
 
   return { quotes, loading, error };
 }

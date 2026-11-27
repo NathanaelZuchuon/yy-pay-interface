@@ -1,13 +1,20 @@
 "use client";
 
 import type { AggregatedQuote } from "@/components/cart/cart-types";
-import { toIntlTag } from "@/i18n/format";
+import { formatMoney, toIntlTag } from "@/i18n/format";
+import { formatFeatureLabel } from "@/lib/commercial-plan-display";
 import { useLocale } from "@/i18n/locale-provider";
 
 /** Détail ligne à ligne du devis calculé par le serveur. */
 export function CartQuoteDetails({ quote }: { quote: AggregatedQuote | null }) {
   const { t, locale } = useLocale();
   const intlTag = toIntlTag(locale);
+
+  // Les lignes arrivent sous la forme `PLAN:CODE` : on affiche le libellé du code.
+  function formatQuoteLineLabel(serviceCode: string | undefined) {
+    const code = serviceCode?.split(":").pop() ?? "";
+    return code ? formatFeatureLabel(code, t) : "-";
+  }
 
   if (!quote?.lines || quote.lines.length === 0) {
     return null;
@@ -24,9 +31,9 @@ export function CartQuoteDetails({ quote }: { quote: AggregatedQuote | null }) {
             key={`${line.serviceCode}-${index}`}
             className="yypay:flex yypay:justify-between yypay:gap-2"
           >
-            <span>{line.serviceCode}</span>
-            <span>
-              {line.amount?.toLocaleString(intlTag)} {line.currency}
+            <span>{formatQuoteLineLabel(line.serviceCode)}</span>
+            <span className="yypay:tabular-nums">
+              {formatMoney(line.amount, line.currency, intlTag)}
             </span>
           </li>
         ))}

@@ -70,7 +70,10 @@ Captures et guide utilisateur LaTeX (`yowpay.tex`) dans `CaptureApiDePaiement/`.
   - À valider visuellement après connexion (clair / sombre, desktop / mobile).
 - [x] **Tableau de bord** : alertes (en attente / échecs 30 j), carte wallet (montant en FCFA, Recharger, Historique), carte abonnement (plan, échéance, jours restants), 5 dernières opérations.
 - [x] **Identité** : logo centralisé (`BrandLogo`), titres d'onglet par page (`Transactions · YowYob Payment`), pied de page (copyright, version, liens support/légal optionnels), titre en double retiré du header.
-- [x] **Qualité** : `npm test` (22 tests unitaires), garde-fou `npm run lint:classes`, découpage de `cart-sheet.tsx`, hook partagé `usePaymentActivity`.
+- [x] **Logo YowYob Payment** (symbole « Y » en SVG, `src/components/brand/brand-logo.tsx` + favicon `src/app/icon.svg`).
+- [x] **Page des plans** : économie annuelle (−X %), cartes refaites (prix formaté, économie, options lisibles, badge Recommandé), tableau comparatif ; un devis en échec ne masque plus les autres prix.
+- [x] **Textes** : noms lisibles des modules/packs/options (table front, à compléter si l'API ajoute des codes), descriptions de plans traduites, plus de « Kernel / IWM / côté serveur », pluriels corrigés, montants formatés partout.
+- [x] **Qualité** : `npm test` (33 tests unitaires), garde-fou `npm run lint:classes`, découpage de `cart-sheet.tsx`, hook partagé `usePaymentActivity`.
 - [ ] Dossier `CaptureApiDePaiement/` (captures + `yowpay.tex`) non suivi par git : décider s'il doit être commité.
 
 ## 6. Points d'attention / dette

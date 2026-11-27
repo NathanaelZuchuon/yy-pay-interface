@@ -166,8 +166,7 @@ function TenantsPageContent() {
             {t.tenants.title}
           </h1>
           <p className="yypay:mt-2 yypay:text-muted-foreground">
-            {t.tenants.descriptionPrefix} <code>X-Tenant-Id</code>{" "}
-            {t.tenants.descriptionSuffix}
+            {t.tenants.description}
           </p>
         </div>
 

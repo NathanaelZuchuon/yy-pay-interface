@@ -1,3 +1,4 @@
+import { formatMoney } from "@/i18n/format";
 import type { Messages } from "@/i18n/messages/fr";
 import type { components } from "@/types/schemas-payment";
 
@@ -137,8 +138,7 @@ export function formatActivityAmount(
   if (item.amount == null) {
     return "-";
   }
-  const formatted = item.amount.toLocaleString(intlTag);
-  return item.currency ? `${formatted} ${item.currency}` : formatted;
+  return formatMoney(item.amount, item.currency, intlTag);
 }
 
 function toTimestamp(value?: string): number {

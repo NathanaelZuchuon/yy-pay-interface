@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useCommercialPlanQuotes } from "@/hooks/use-commercial-plan-quotes";
+import { usePlanPricing } from "@/hooks/use-plan-pricing";
 import { useLocale } from "@/i18n/locale-provider";
 import { withBasePath } from "@/lib/base-path";
 import { bffGet } from "@/lib/bff-client";
@@ -50,10 +50,8 @@ export default function LandingPage() {
   const [plans, setPlans] = useState<CommercialPlanResponse[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("MONTHLY");
-  const { quotes, loading: quotesLoading } = useCommercialPlanQuotes(
-    plans,
-    billingPeriod,
-  );
+  const { quotes, quotesLoading, savingsByPlan, maxSavingsPercent } =
+    usePlanPricing(plans, billingPeriod);
 
   useEffect(() => {
     bffGet<CommercialPlanResponse[]>("/api/plans")
@@ -194,6 +192,8 @@ export default function LandingPage() {
               quotesLoading={quotesLoading}
               billingPeriod={billingPeriod}
               onBillingPeriodChange={setBillingPeriod}
+              savingsByPlan={savingsByPlan}
+              maxSavingsPercent={maxSavingsPercent}
               getCtaLabel={() => t.landing.getStarted}
               onSelectPlan={() => {
                 globalThis.location.assign(withBasePath("/login"));

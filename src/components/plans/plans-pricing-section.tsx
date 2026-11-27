@@ -2,6 +2,8 @@
 
 import { BillingPeriodToggle } from "@/components/plans/billing-period-toggle";
 import { PlanPricingCard } from "@/components/plans/plan-pricing-card";
+import { PlansComparisonTable } from "@/components/plans/plans-comparison-table";
+import type { PlanSavings } from "@/hooks/use-plan-pricing";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocale } from "@/i18n/locale-provider";
 import {
@@ -25,6 +27,11 @@ type PlansPricingSectionProps = {
   billingPeriod: BillingPeriod;
   onBillingPeriodChange?: (period: BillingPeriod) => void;
   showBillingToggle?: boolean;
+  /** Titre « Choisissez le meilleur plan » (masqué quand la page a déjà le sien). */
+  showHeading?: boolean;
+  showComparison?: boolean;
+  savingsByPlan?: Record<string, PlanSavings>;
+  maxSavingsPercent?: number;
   activeSubscription?: SubscriptionResponse | null;
   purchaseBlockMessage?: string;
   pendingPlanCodes?: Set<string>;
@@ -48,6 +55,10 @@ export function PlansPricingSection({
   billingPeriod,
   onBillingPeriodChange,
   showBillingToggle = true,
+  showHeading = true,
+  showComparison = true,
+  savingsByPlan = {},
+  maxSavingsPercent = 0,
   activeSubscription = null,
   purchaseBlockMessage,
   pendingPlanCodes = new Set(),
@@ -69,12 +80,16 @@ export function PlansPricingSection({
   return (
     <section id={id} className={cn("yypay:w-full", className)}>
       <div className="yypay:mx-auto yypay:max-w-3xl yypay:text-center">
-        <h2 className="yypay:text-2xl yypay:font-bold yypay:tracking-tight yypay:text-foreground yypay:sm:text-4xl">
-          {t.plans.section.title}
-        </h2>
-        <p className="yypay:mt-3 yypay:text-base yypay:text-muted-foreground yypay:sm:text-lg">
-          {t.plans.section.description}
-        </p>
+        {showHeading && (
+          <>
+            <h2 className="yypay:text-2xl yypay:font-bold yypay:tracking-tight yypay:text-foreground yypay:sm:text-4xl">
+              {t.plans.section.title}
+            </h2>
+            <p className="yypay:mt-3 yypay:text-base yypay:text-muted-foreground yypay:sm:text-lg">
+              {t.plans.section.description}
+            </p>
+          </>
+        )}
 
         {purchaseBlocked && purchaseBlockMessage && (
           <p className="yypay:mt-4 yypay:rounded-lg yypay:border yypay:border-border yypay:bg-muted/40 yypay:px-4 yypay:py-3 yypay:text-sm yypay:text-muted-foreground">
@@ -83,10 +98,11 @@ export function PlansPricingSection({
         )}
 
         {showBillingToggle && onBillingPeriodChange && (
-          <div className="yypay:mt-8 yypay:flex yypay:justify-center">
+          <div className={cn("yypay:flex yypay:justify-center", showHeading ? "yypay:mt-8" : "yypay:mt-2")}>
             <BillingPeriodToggle
               value={billingPeriod}
               onChange={onBillingPeriodChange}
+              savingsPercent={maxSavingsPercent}
             />
           </div>
         )}
@@ -103,7 +119,7 @@ export function PlansPricingSection({
           {t.plans.section.empty}
         </p>
       ) : (
-        <div className="yypay:mx-auto yypay:mt-10 yypay:grid yypay:max-w-7xl yypay:grid-cols-1 yypay:items-stretch yypay:gap-6 yypay:sm:mt-12 yypay:md:grid-cols-2 yypay:xl:grid-cols-3 yypay:2xl:grid-cols-4">
+        <div className="yypay:mx-auto yypay:mt-10 yypay:grid yypay:max-w-7xl yypay:grid-cols-1 yypay:items-stretch yypay:gap-x-6 yypay:gap-y-10 yypay:sm:mt-12 yypay:md:grid-cols-2 yypay:xl:grid-cols-3">
           {plans.map((plan) => {
             const planCode = plan.code ?? "";
             const highlighted = Boolean(planCode && planCode === popularPlanCode);
@@ -115,6 +131,7 @@ export function PlansPricingSection({
                 quote={planCode ? quotes[planCode] : undefined}
                 quoteLoading={quotesLoading}
                 billingPeriod={billingPeriod}
+                savings={planCode ? savingsByPlan[planCode] : undefined}
                 highlighted={highlighted}
                 activeSubscription={activeSubscription}
                 autoRenewal={
@@ -143,6 +160,10 @@ export function PlansPricingSection({
             );
           })}
         </div>
+      )}
+
+      {showComparison && !loading && (
+        <PlansComparisonTable plans={plans} highlightedPlanCode={popularPlanCode} />
       )}
     </section>
   );
